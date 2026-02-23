@@ -559,11 +559,39 @@ function renderFinisher(){
   document.getElementById('finisher-container').innerHTML=f?`<div class="finisher-card"><div class="finisher-title">🏁 Finisher Cardio</div>${f}</div>`:'';
 }
 
+function getPrevWeekData(ei){
+  if(selW<=1)return null;
+  const curC=getWC(selW),prevW=selW-1,prevC=getWC(prevW);
+  // Only compare within same meso (exercises change between mesos)
+  if(curC.meso!==prevC.meso)return null;
+  const prevEn=ent(prevW,selD),prevSd=prevEn.sets?.[ei]||{};
+  let tw=0,wc=0;
+  const exList=EX[curC.meso]?.[selD]||[];
+  const ex=exList[ei];if(!ex)return null;
+  for(let s=0;s<ex.sets;s++){if(prevSd[s]){const w=parseFloat(prevSd[s].weight)||0;if(w>0){tw+=w;wc++;}}}
+  if(wc===0)return null;
+  const avg=tw/wc;
+  const isDeload=curC.isDeload;
+  // Suggest +2.5kg for small weights (<30), +5% for heavier
+  const increment=avg<30?2.5:Math.round(avg*0.05*2)/2;
+  const suggestion=isDeload?Math.round((avg*0.85)*2)/2:Math.round((avg+increment)*2)/2;
+  return{avg:avg.toFixed(1),suggestion,isDeload,prevWeek:prevW};
+}
+
 function renderExercises(){
   const c=getWC(selW),exList=EX[c.meso]?.[selD]||[],en=ent(selW,selD);
   const con=document.getElementById('exercises-container');con.innerHTML='';
   exList.forEach((ex,ei)=>{
     const sd=en.sets?.[ei]||{};
+    const prev=getPrevWeekData(ei);
+    let prevHtml='';
+    if(prev){
+      if(prev.isDeload){
+        prevHtml=`<div style="font-size:10px;margin-top:4px;padding:4px 8px;background:#F4A26112;border-radius:6px;color:#8B7535;">📊 S${prev.prevWeek} : <strong>${prev.avg} kg</strong> → Deload : <strong>${prev.suggestion} kg</strong> ⚡</div>`;
+      }else{
+        prevHtml=`<div style="font-size:10px;margin-top:4px;padding:4px 8px;background:#4ECDC412;border-radius:6px;color:#2D6A4F;">📊 S${prev.prevWeek} : <strong>${prev.avg} kg</strong> → Objectif : <strong>${prev.suggestion} kg</strong> 🔼</div>`;
+      }
+    }
     let sH='<tr><th>Série</th><th>Cible</th><th>Reps</th><th>Charge (kg)</th><th>✓</th></tr>';
     for(let si=0;si<ex.sets;si++){
       const d=sd[si]||{},rT=parseInt(ex.reps)||10,dR=parseInt(d.reps)||0,ok=d.reps&&dR>=rT,has=d.reps&&d.weight;
@@ -580,6 +608,7 @@ function renderExercises(){
       ${ex.note?`<div class="ex-tag" style="background:#C8A84E18;color:#8B7535">${ex.note}</div>`:''}
       <div class="ex-name">${ex.name}</div><div class="ex-detail">${ex.muscle}</div>
       <div class="ex-meta"><span class="ex-meta-chip">⏱ ${ex.tempo}</span><span class="ex-meta-chip">💪 RIR ${ex.rir}</span><span class="ex-meta-chip">⏸ ${ex.rest}</span></div>
+      ${prevHtml}
     </div><a href="https://www.youtube.com/results?search_query=${ex.yt}" target="_blank" class="yt-btn">▶ Vidéo</a></div>
     <table class="sets-table">${sH}</table>`;
     con.appendChild(card);
