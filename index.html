@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Manon Fit — Programme Shape</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --rose: #e8a0b4;
+  --rose-light: #f5d5de;
+  --rose-dark: #c77a91;
+  --blush: #fef0f3;
+  --peach: #f9c4a8;
+  --gold: #d4a574;
+  --cream: #fdf8f5;
+  --charcoal: #2d2a2e;
+  --text: #3d3a3e;
+  --text-light: #7a7580;
+  --white: #ffffff;
+  --success: #7bc4a0;
+  --success-light: #e8f5ee;
+  --warning: #f0c060;
+  --danger: #e07070;
+  --bg: linear-gradient(135deg, #fdf8f5 0%, #fef0f3 50%, #f5e6ea 100%);
+  --card-shadow: 0 2px 16px rgba(200,120,145,0.10);
+  --card-radius: 16px;
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  padding-bottom: 80px;
+}
+h1,h2,h3 { font-family: 'Cormorant Garamond', serif; }
+
+/* NAV */
+.nav {
+  position: fixed; bottom:0; left:0; right:0;
+  background: var(--white);
+  border-top: 1px solid var(--rose-light);
+  display: flex; justify-content: space-around;
+  padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+  z-index: 1000;
+  box-shadow: 0 -2px 12px rgba(200,120,145,0.08);
+}
+.nav-btn {
+  background: none; border: none;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  font-family: 'Nunito', sans-serif; font-size: 10px; font-weight: 600;
+  color: var(--text-light); cursor: pointer; padding: 4px 12px;
+  transition: color 0.2s;
+}
+.nav-btn.active { color: var(--rose-dark); }
+.nav-btn svg { width: 24px; height: 24px; }
+
+/* SCREENS */
+.screen { display: none; padding: 20px 16px; animation: fadeIn 0.3s ease; }
+.screen.active { display: block; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+/* HEADER */
+.header {
+  text-align: center; padding: 16px 0 12px;
+}
+.header h1 { font-size: 28px; color: var(--rose-dark); font-weight: 700; }
+.header .subtitle { font-size: 13px; color: var(--text-light); margin-top: 2px; }
+
+/* MOTIVATION */
+.motivation-card {
+  background: linear-gradient(135deg, var(--rose) 0%, var(--peach) 100%);
+  color: var(--white); border-radius: var(--card-radius);
+  padding: 16px 20px; margin: 12px 0 20px; text-align: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 17px; font-style: italic; font-weight: 600;
+  box-shadow: 0 4px 20px rgba(232,160,180,0.3);
+  line-height: 1.4;
+}
+
+/* CARDS */
+.card {
+  background: var(--white); border-radius: var(--card-radius);
+  padding: 16px; margin-bottom: 12px;
+  box-shadow: var(--card-shadow);
+  border: 1px solid rgba(232,160,180,0.12);
+}
+.card-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px; font-weight: 700; color: var(--charcoal);
+  margin-bottom: 8px;
+}
+
+/* SESSION SELECTOR */
+.meso-selector {
+  display: flex; gap: 8px; margin-bottom: 16px;
+}
+.meso-btn {
+  flex:1; padding: 10px 8px; border-radius: 12px;
+  border: 2px solid var(--rose-light); background: var(--white);
+  font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 12px;
+  color: var(--text-light); cursor: pointer; transition: all 0.2s;
+  text-align: center;
+}
+.meso-btn.active { border-color: var(--rose); background: var(--blush); color: var(--rose-dark); }
+.meso-btn.locked { opacity: 0.4; cursor: not-allowed; }
+.meso-btn.locked::after { content: ' 🔒'; }
+
+.session-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px;
+}
+.session-card {
+  background: var(--white); border-radius: var(--card-radius);
+  padding: 16px 12px; text-align: center; cursor: pointer;
+  border: 2px solid var(--rose-light); transition: all 0.25s;
+  box-shadow: var(--card-shadow);
+}
+.session-card:active { transform: scale(0.97); }
+.session-card .letter {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 32px; font-weight: 700; color: var(--rose-dark);
+}
+.session-card .label { font-size: 11px; color: var(--text-light); margin-top: 4px; font-weight: 600; }
+.session-card .last-done { font-size: 10px; color: var(--gold); margin-top: 6px; }
+
+/* WORKOUT VIEW */
+.workout-header {
+  background: linear-gradient(135deg, var(--rose-dark) 0%, var(--rose) 100%);
+  color: var(--white); border-radius: var(--card-radius);
+  padding: 16px 20px; margin-bottom: 16px;
+  box-shadow: 0 4px 20px rgba(200,120,145,0.25);
+}
+.workout-header h2 { font-size: 22px; margin-bottom: 4px; }
+.workout-header .meta { font-size: 12px; opacity: 0.9; }
+.back-btn {
+  background: rgba(255,255,255,0.2); border: none; color: var(--white);
+  font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 13px;
+  padding: 6px 14px; border-radius: 20px; cursor: pointer; margin-bottom: 10px;
+  display: inline-block;
+}
+
+/* SECTION HEADERS */
+.section-header {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px; font-weight: 700; color: var(--rose-dark);
+  margin: 20px 0 10px; padding-left: 4px;
+  border-left: 3px solid var(--rose); padding-left: 12px;
+}
+
+/* EXERCISE CARD */
+.exo-card {
+  background: var(--white); border-radius: var(--card-radius);
+  padding: 14px 16px; margin-bottom: 10px;
+  box-shadow: var(--card-shadow);
+  border-left: 4px solid var(--rose);
+}
+.exo-card[data-cat="fessiers"] { border-left-color: #e87fa0; }
+.exo-card[data-cat="ischios"] { border-left-color: #d4a574; }
+.exo-card[data-cat="quadriceps"] { border-left-color: #7bc4a0; }
+.exo-card[data-cat="dos"] { border-left-color: #7aadd4; }
+.exo-card[data-cat="epaules"] { border-left-color: #b08ad6; }
+.exo-card[data-cat="pectoraux"] { border-left-color: #e0a070; }
+.exo-card[data-cat="core"] { border-left-color: #80c0c0; }
+
+.exo-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.exo-name { font-weight: 700; font-size: 14px; color: var(--charcoal); flex:1; }
+.exo-muscles { font-size: 11px; color: var(--text-light); }
+.exo-params { font-size: 11px; color: var(--text-light); margin-bottom: 6px; }
+.exo-params span { margin-right: 10px; }
+
+.exo-actions { display: flex; gap: 8px; margin-bottom: 10px; }
+.exo-action-btn {
+  background: var(--blush); border: 1px solid var(--rose-light);
+  border-radius: 8px; padding: 5px 10px; font-size: 11px;
+  font-family: 'Nunito',sans-serif; font-weight: 600;
+  color: var(--rose-dark); cursor: pointer;
+  display: flex; align-items: center; gap: 4px;
+}
+
+/* CHARGE SUGGESTION */
+.charge-suggestion {
+  background: linear-gradient(135deg, var(--success-light), #f0faf5);
+  border-radius: 10px; padding: 10px 14px; margin-bottom: 10px;
+  font-size: 12px; color: #4a8a6a; border: 1px solid rgba(123,196,160,0.3);
+  line-height: 1.4;
+}
+.charge-suggestion .emoji { font-size: 16px; }
+
+/* SET LOGGING */
+.sets-grid { display: flex; flex-direction: column; gap: 6px; }
+.set-row {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--cream); border-radius: 10px; padding: 8px 10px;
+}
+.set-label {
+  font-weight: 700; font-size: 12px; color: var(--rose-dark);
+  min-width: 28px; text-align: center;
+}
+.set-input {
+  width: 56px; text-align: center; border: 1.5px solid var(--rose-light);
+  border-radius: 8px; padding: 6px 4px; font-size: 14px;
+  font-family: 'Nunito',sans-serif; font-weight: 600;
+  background: var(--white); color: var(--charcoal);
+}
+.set-input:focus { outline: none; border-color: var(--rose); }
+.set-unit { font-size: 11px; color: var(--text-light); min-width: 24px; }
+.set-check {
+  width: 30px; height: 30px; border-radius: 50%;
+  border: 2px solid var(--rose-light); background: var(--white);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 16px; transition: all 0.2s; flex-shrink:0;
+}
+.set-check.done { background: var(--success); border-color: var(--success); color: var(--white); }
+
+/* REST TIMER */
+.rest-timer {
+  position: fixed; top: 0; left: 0; right: 0;
+  background: linear-gradient(135deg, var(--rose-dark), var(--rose));
+  color: var(--white); text-align: center; padding: 12px;
+  z-index: 999; transform: translateY(-100%); transition: transform 0.3s;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+.rest-timer.active { transform: translateY(0); }
+.rest-timer .timer-display { font-size: 36px; font-weight: 700; font-family: 'Cormorant Garamond', serif; }
+.rest-timer .timer-label { font-size: 12px; opacity: 0.9; }
+.timer-btns { display: flex; gap: 8px; justify-content: center; margin-top: 6px; }
+.timer-btn {
+  background: rgba(255,255,255,0.2); border: none; color: var(--white);
+  padding: 4px 14px; border-radius: 16px; font-family: 'Nunito',sans-serif;
+  font-weight: 700; font-size: 12px; cursor: pointer;
+}
+
+/* FINISHER CARD */
+.finisher-card {
+  background: linear-gradient(135deg, #fff5e6, #fff0f3);
+  border-radius: var(--card-radius); padding: 16px;
+  margin-bottom: 12px; border: 1px solid rgba(232,160,180,0.2);
+}
+.finisher-title { font-family: 'Cormorant Garamond',serif; font-size: 18px; font-weight: 700; color: var(--charcoal); margin-bottom: 4px; }
+.finisher-format { font-size: 12px; color: var(--gold); font-weight: 600; margin-bottom: 8px; }
+.finisher-detail { font-size: 13px; color: var(--text); line-height: 1.6; margin-bottom: 10px; }
+.finisher-log {
+  display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+}
+.finisher-log input {
+  flex: 1; min-width: 100px; border: 1.5px solid var(--rose-light);
+  border-radius: 8px; padding: 8px 12px; font-family: 'Nunito',sans-serif;
+  font-size: 13px; background: var(--white);
+}
+.finisher-log input:focus { outline: none; border-color: var(--rose); }
+
+/* SCORE */
+.score-card {
+  background: linear-gradient(135deg, var(--rose) 0%, var(--gold) 100%);
+  border-radius: var(--card-radius); padding: 20px; text-align: center;
+  color: var(--white); margin: 16px 0;
+  box-shadow: 0 4px 24px rgba(232,160,180,0.3);
+}
+.score-value { font-family: 'Cormorant Garamond',serif; font-size: 48px; font-weight: 700; }
+.score-label { font-size: 13px; opacity: 0.9; }
+
+.finish-workout-btn {
+  width: 100%; padding: 16px; border: none; border-radius: var(--card-radius);
+  background: linear-gradient(135deg, var(--rose-dark), var(--rose));
+  color: var(--white); font-family: 'Nunito',sans-serif;
+  font-size: 16px; font-weight: 700; cursor: pointer;
+  box-shadow: 0 4px 20px rgba(200,120,145,0.3);
+  transition: transform 0.2s;
+}
+.finish-workout-btn:active { transform: scale(0.98); }
+
+/* MODAL */
+.modal-overlay {
+  position: fixed; top:0; left:0; right:0; bottom:0;
+  background: rgba(45,42,46,0.5); z-index: 2000;
+  display: none; align-items: flex-end; justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.active { display: flex; }
+.modal-content {
+  background: var(--white); border-radius: 20px 20px 0 0;
+  padding: 24px 20px max(20px, env(safe-area-inset-bottom));
+  width: 100%; max-width: 500px; max-height: 80vh; overflow-y: auto;
+  animation: slideUp 0.3s ease;
+}
+@keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+.modal-close {
+  background: var(--cream); border: none; width: 36px; height: 36px;
+  border-radius: 50%; font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  float: right; color: var(--text-light);
+}
+
+/* HISTORY */
+.history-item {
+  background: var(--white); border-radius: 12px;
+  padding: 14px 16px; margin-bottom: 8px;
+  box-shadow: var(--card-shadow);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.history-item .left { flex:1; }
+.history-item .date { font-size: 12px; color: var(--text-light); }
+.history-item .session-name { font-weight: 700; font-size: 14px; color: var(--charcoal); }
+.history-item .score-badge {
+  background: linear-gradient(135deg, var(--rose), var(--peach));
+  color: var(--white); border-radius: 10px; padding: 4px 12px;
+  font-weight: 700; font-size: 14px;
+}
+
+/* SETTINGS */
+.setting-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 0; border-bottom: 1px solid var(--rose-light);
+}
+.setting-label { font-weight: 600; font-size: 14px; }
+.setting-desc { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+.unlock-btn {
+  padding: 8px 16px; border-radius: 10px;
+  border: 2px solid var(--rose); background: var(--blush);
+  font-family: 'Nunito',sans-serif; font-weight: 700;
+  font-size: 12px; color: var(--rose-dark); cursor: pointer;
+}
+.unlock-btn.unlocked { background: var(--success-light); border-color: var(--success); color: #4a8a6a; }
+.reset-btn {
+  width: 100%; padding: 14px; border: 2px solid var(--danger);
+  border-radius: var(--card-radius); background: var(--white);
+  color: var(--danger); font-family:'Nunito',sans-serif;
+  font-weight: 700; font-size: 14px; cursor: pointer; margin-top: 20px;
+}
+
+/* WARMUP */
+.warmup-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 0; border-bottom: 1px solid rgba(232,160,180,0.1);
+}
+.warmup-item:last-child { border-bottom: none; }
+.warmup-bullet { width: 8px; height: 8px; border-radius: 50%; background: var(--rose); flex-shrink:0; }
+.warmup-text { font-size: 13px; flex:1; }
+.warmup-video {
+  background: var(--blush); border: 1px solid var(--rose-light);
+  border-radius: 6px; padding: 3px 8px; font-size: 10px;
+  color: var(--rose-dark); cursor: pointer; text-decoration: none;
+  font-weight: 600;
+}
+
+/* CORE ITEM */
+.core-list { list-style: none; }
+.core-list li {
+  font-size: 13px; padding: 6px 0;
+  border-bottom: 1px solid rgba(232,160,180,0.1);
+}
+.core-list li:last-child { border-bottom: none; }
+.core-rounds { font-size: 12px; color: var(--gold); font-weight: 600; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+
+<!-- REST TIMER -->
+<div class="rest-timer" id="restTimer">
+  <div class="timer-label">Repos</div>
+  <div class="timer-display" id="timerDisplay">0:00</div>
+  <div class="timer-btns">
+    <button class="timer-btn" onclick="addTime(-15)">-15s</button>
+    <button class="timer-btn" onclick="skipTimer()">Passer ▶</button>
+    <button class="timer-btn" onclick="addTime(15)">+15s</button>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal-content" id="modalContent"></div>
+</div>
+
+<!-- HOME SCREEN -->
+<div class="screen active" id="homeScreen">
+  <div class="header">
+    <h1>Manon Fit</h1>
+    <div class="subtitle">Programme Shape · 10 semaines</div>
+  </div>
+  <div class="motivation-card" id="homeMotivation"></div>
+
+  <div class="card-title" style="margin-bottom:10px;">Mésocycle</div>
+  <div class="meso-selector" id="mesoSelector"></div>
+
+  <div class="card-title" style="margin-bottom:10px;">Séance du jour</div>
+  <div class="session-grid" id="sessionGrid"></div>
+
+  <div class="card" id="weekInfo" style="margin-top:8px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-size:12px;color:var(--text-light);">Semaine en cours</div>
+        <div style="font-weight:700;font-size:18px;" id="currentWeekDisplay">S1</div>
+      </div>
+      <div>
+        <div style="font-size:12px;color:var(--text-light);">RIR cible</div>
+        <div style="font-weight:700;font-size:18px;color:var(--rose-dark);" id="currentRIR">3-4</div>
+      </div>
+      <div>
+        <button class="exo-action-btn" onclick="advanceWeek()" style="font-size:12px;">Semaine +1 ▶</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WORKOUT SCREEN -->
+<div class="screen" id="workoutScreen"></div>
+
+<!-- HISTORY SCREEN -->
+<div class="screen" id="historyScreen">
+  <div class="header">
+    <h1>Historique</h1>
+    <div class="subtitle">Tes séances passées</div>
+  </div>
+  <div id="historyList"></div>
+</div>
+
+<!-- SETTINGS SCREEN -->
+<div class="screen" id="settingsScreen">
+  <div class="header">
+    <h1>Réglages</h1>
+  </div>
+  <div class="card">
+    <div class="card-title">Mésocycles</div>
+    <div id="mesoSettings"></div>
+  </div>
+  <button class="reset-btn" onclick="resetAll()">🗑 Réinitialiser toutes les données</button>
+</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <button class="nav-btn active" onclick="showScreen('home')" id="navHome">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3m10-11v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001 1h4a1 1 0 001-1v-5a1 1 0 011-1h2a1 1 0 011 1v5"/></svg>
+    Séances
+  </button>
+  <button class="nav-btn" onclick="showScreen('history')" id="navHistory">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    Historique
+  </button>
+  <button class="nav-btn" onclick="showScreen('settings')" id="navSettings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    Réglages
+  </button>
+</nav>
+
+<script>
+// ═══════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════
+
+const MOTIVATION_QUOTES = [
+  "Chaque rep te rapproche de la meilleure version de toi ✨",
+  "T'es là, c'est déjà la moitié du chemin 💪",
+  "Ton corps peut le faire, ton esprit doit y croire 🌟",
+  "Aujourd'hui tu plantes les graines, demain tu récolteras 🌸",
+  "La seule séance que tu regrettes, c'est celle que t'as pas faite 🔥",
+  "Chaque goutte de sueur est un investissement 💎",
+  "Tu ne deviens pas forte par hasard, mais par choix 🦋",
+  "Fais-toi confiance, t'es plus forte que tu ne le crois 💗",
+  "Régularité > Perfection · Tu gères 🎯",
+  "La force se construit un set à la fois 🏋️‍♀️",
+  "Ce qui compte c'est de se présenter · Le reste suit ✨",
+  "Ton futur corps te remercie déjà 🌺",
+  "Pas besoin d'être parfaite, juste présente 💫",
+  "Une rep de plus que la dernière fois = progrès 📈",
+  "La douleur est temporaire, la fierté est permanente 👑",
+  "Tu es ton propre projet le plus important 🌻",
+  "Fais de ton mieux aujourd'hui, le reste suivra 🌈",
+  "La discipline bat la motivation tous les jours 💪",
+  "Chaque séance te rend un peu plus indestructible 🔥",
+  "T'as survécu à des gardes de nuit, cette séance c'est rien pour toi 😉"
+];
+
+const CHARGE_MESSAGES = [
+  {tpl: "La dernière fois c'était {old} kg — on tente {new} kg ? Tu vas assurer 💪"},
+  {tpl: "{old} kg c'est validé ! On passe à {new} kg, t'es prête 🔥"},
+  {tpl: "T'as géré {old} kg comme une pro — {new} kg aujourd'hui ? 🌟"},
+  {tpl: "{old} kg ✓ → {new} kg · Fais-toi confiance, t'es capable 💗"},
+  {tpl: "Tu maîtrises {old} kg · {new} kg c'est juste un petit cran, go ! ✨"},
+  {tpl: "{new} kg aujourd'hui ? Après {old} kg t'es largement prête 🦋"},
+];
+
+const WARMUP = [
+  {name:"Assault Bike ou Rameur léger", duration:"3 min", yt:"assault+bike+echauffement"},
+  {name:"Banded Monster Walk", duration:"15 pas/côté", yt:"banded+monster+walk+technique"},
+  {name:"Banded Glute Bridge", duration:"15 reps", yt:"banded+glute+bridge+activation"},
+  {name:"Cat-Cow", duration:"8 reps", yt:"cat+cow+stretch+mobilite"},
+  {name:"World's Greatest Stretch", duration:"5/côté", yt:"world+greatest+stretch+technique"},
+];
+
+function makeExo(id, name, muscles, sets, reps, tempo, rest, startWeight, increment, cat, yt, desc, unilateral=false, isBodyweight=false) {
+  return {id, name, muscles, sets, reps, tempo, rest, startWeight, increment, cat, yt, desc, unilateral, isBodyweight};
+}
+
+const MESOS = [
+  { // MESO 1 — S1-S4
+    id: 1, name: "Fondation", weeks: [1,2,3,4],
+    rir: ["3-4","3","2","1-2"],
+    sessions: {
+      A: {
+        name: "Glute / Quad + Push",
+        exercises: [
+          makeExo("m1a1","Hip Thrust Booty Builder","Fessiers",3,12,"2-1-1-2",90,25,5,"fessiers","hip+thrust+booty+builder+machine+technique","Installer le dos contre le pad, pieds à plat largeur des hanches. Descendre les hanches en contrôlant (2s), puis pousser fort vers le haut en serrant les fessiers. Maintenir la contraction 2s en haut. Ne pas cambrer le bas du dos."),
+          makeExo("m1a2","Presse à cuisses pieds hauts & larges","Quadriceps · Fessiers",3,12,"3-1-1-0",90,50,5,"quadriceps","presse+cuisses+pieds+hauts+fessiers+technique","Pieds placés haut et larges sur la plateforme. Descendre lentement (3s) jusqu'à 90° de flexion des genoux. Pousser à travers les talons. Ne pas décoller le bas du dos du dossier."),
+          makeExo("m1a3","Abduction machine","Moyen fessier",3,15,"2-1-1-2",60,42,5,"fessiers","abduction+machine+fessiers+technique","Assise bien droite, dos collé au dossier. Écarter les cuisses en contrôlant, maintenir 2s en ouverture maximale, revenir lentement. Penser à pousser avec les genoux, pas les pieds."),
+          makeExo("m1a4","Développé convergente Panatta","Pectoraux · Triceps",3,12,"2-1-1-0",75,null,5,"pectoraux","développé+convergent+machine+pectoraux+technique","Saisir les poignées, coudes à 45° du corps. Pousser en expirant, descendre lentement (2s). Garder les omoplates serrées contre le dossier tout au long du mouvement."),
+          makeExo("m1a5","Élévations latérales câble","Deltoïdes latéraux",3,15,"2-0-1-1",45,5,2.5,"epaules","elevation+laterale+cable+un+bras+technique","Debout de côté par rapport à la poulie basse. Monter le bras tendu jusqu'à hauteur d'épaule (1s), maintenir 1s en haut, redescendre (2s). Léger penchement vers l'extérieur pour plus d'amplitude.",true),
+        ],
+        core: {rounds:2, exercises:["Dead Bug × 10/côté","Planche avant-bras — 30s"]},
+        coreYt: ["dead+bug+exercice+technique","planche+avant+bras+gainage+technique"],
+        finishers: {
+          "1-2": {name:"La Navette", format:"AMRAP 8 min", detail:"• Broad Jump × 5\n• Ball Slam × 8 (6 kg)\n• Assault Bike 12 cal", yt:"broad+jump+technique+debutant"},
+          "3-4": {name:"Le Circuit Plaisir", format:"3 tours · 45s repos entre tours", detail:"• Assault Bike 10 cal\n• Squat Jump × 8\n• Battle Ropes × 20s\n• Bear Crawl 10m aller-retour", yt:"bear+crawl+technique+exercice"},
+        }
+      },
+      B: {
+        name: "Glute / Ischio + Pull",
+        exercises: [
+          makeExo("m1b1","RDL haltères","Ischio-jambiers · Fessiers",3,12,"3-1-1-0",90,12,2.5,"ischios","romanian+deadlift+halteres+technique+femme","Debout, haltères devant les cuisses. Pousser les fesses vers l'arrière en gardant les jambes quasi tendues. Descendre le long des cuisses (3s) jusqu'à sentir l'étirement des ischios. Remonter en serrant les fessiers."),
+          makeExo("m1b2","Leg Curl allongé machine","Ischio-jambiers",3,12,"3-0-1-1",75,27,5,"ischios","leg+curl+allonge+machine+technique","Allongée sur le ventre, rouleau juste au-dessus des chevilles. Plier les jambes en amenant les talons vers les fessiers (1s), maintenir 1s, redescendre lentement (3s). Ne pas décoller les hanches du banc."),
+          makeExo("m1b3","Extension dos rond chaise romaine","Fessiers · Ischio",3,12,"2-1-1-2",75,0,5,"fessiers","back+extension+glute+focus+round+back","Se placer sur la chaise romaine, dos volontairement arrondi (thoracique). Descendre en gardant le dos rond (2s), remonter en poussant les fessiers et en contractant fort en haut (2s). NE PAS cambrer le bas du dos en haut.",false,true),
+          makeExo("m1b4","Tirage horizontal câble","Dos · Biceps",3,12,"2-1-1-1",75,25,2.5,"dos","tirage+horizontal+cable+prise+neutre+technique","Assise, pieds calés, saisir la poignée neutre. Tirer vers le nombril (1s) en serrant les omoplates (1s hold), relâcher lentement (2s). Garder le buste droit, ne pas se pencher en arrière."),
+          makeExo("m1b5","Reverse Fly machine","Deltoïde post · Rhomboïdes",3,15,"2-0-1-2",60,10,2.5,"epaules","reverse+fly+machine+pec+deck+inverse+technique","Face à la machine pec deck (poignées en avant). Ouvrir les bras vers l'arrière en gardant une légère flexion des coudes (1s), contracter 2s, revenir lentement (2s). Penser à rapprocher les omoplates."),
+        ],
+        core: {rounds:2, exercises:["Pallof Press câble — 8/côté (hold 3s)","Bird Dog — 10/côté"]},
+        coreYt: ["pallof+press+cable+technique+core","bird+dog+exercice+technique"],
+        finishers: {
+          "1-2": {name:"Le Duo Infernal", format:"Toutes les 90s × 6 rounds", detail:"• Sled Push 20m (20 kg)\n• KB Swing × 10 (14 kg)\n→ Le repos c'est ce qui reste dans les 90s", yt:"sled+push+technique+debutant"},
+          "3-4": {name:"Sprint & Slam", format:"EMOM 8 min", detail:"• Min impaire : Rameur sprint 150m\n• Min paire : Ball Slam × 10 (6-8 kg)", yt:"ball+slam+technique+exercice"},
+        }
+      },
+      C: {
+        name: "Glute Unilatéral + Épaules",
+        exercises: [
+          makeExo("m1c1","Bulgarian Split Squat haltères","Quadriceps · Fessiers",3,10,"2-1-1-0",75,5,2.5,"fessiers","bulgarian+split+squat+halteres+technique+femme","Pied arrière sur un banc, pied avant suffisamment loin devant. Descendre le genou arrière vers le sol (2s), maintenir 1s en bas, remonter (1s). Garder le buste droit, poids sur le talon avant.",true),
+          makeExo("m1c2","Kickback machine","Fessiers",3,12,"2-0-1-2",60,null,5,"fessiers","kickback+machine+fessiers+technique","Appuyée sur la machine, pied contre la plateforme. Pousser la jambe vers l'arrière en contractant fort le fessier (1s), maintenir 2s en extension, revenir lentement (2s). Contrôler le retour, ne pas utiliser l'élan.",true),
+          makeExo("m1c3","Sumo Squat KB","Adducteurs · Fessiers",3,12,"3-1-1-0",75,24,4,"fessiers","sumo+squat+kettlebell+technique","Debout pieds très écartés, pointes vers l'extérieur, KB tenue à bout de bras. Descendre lentement (3s) en poussant les genoux vers l'extérieur, maintenir 1s en bas, remonter. Garder le buste bien droit."),
+          makeExo("m1c4","Shoulder Press machine Panatta","Deltoïdes",3,12,"2-0-1-1",75,null,5,"epaules","shoulder+press+machine+technique+debutant","Assise, dos bien calé, saisir les poignées. Pousser vers le haut (1s), maintenir 1s en haut, redescendre lentement (2s). Ne pas cambrer le dos, garder le core gainé."),
+          makeExo("m1c5","Lat Pulldown prise neutre","Grand dorsal · Biceps",3,12,"2-1-1-1",75,28,5,"dos","lat+pulldown+prise+neutre+technique","Saisir la poignée neutre, bras tendus en haut. Tirer vers la poitrine (1s) en sortant la poitrine, maintenir 1s en bas, remonter lentement (2s). Ne pas se pencher excessivement en arrière."),
+        ],
+        core: {rounds:2, exercises:["Farmer Walk KB — 30m (2×12 kg)","Gainage latéral — 25s/côté"]},
+        coreYt: ["farmer+walk+kettlebell+technique","gainage+lateral+technique"],
+        finishers: {
+          "1-2": {name:"La Cascade", format:"Échelle descendante · For time", detail:"• Wall Ball 10-8-6-4-2 (4 kg)\n• Box Step-Up 10-8-6-4-2 (40 cm, PDC)\n→ Alterner Wall Ball puis Step-Up à chaque palier", yt:"wall+ball+technique+debutant"},
+          "3-4": {name:"Le Fermier Pressé", format:"For time · Cap 10 min", detail:"• Farmer Walk KB 40m (2×14 kg)\n• Ski Erg 20 cal\n• Farmer Walk KB 30m\n• Ski Erg 15 cal\n• Farmer Walk KB 20m\n• Ski Erg 10 cal", yt:"ski+erg+technique+debutant"},
+        }
+      }
+    }
+  },
+  { // MESO 2 — S5-S8
+    id: 2, name: "Développement", weeks: [5,6,7,8],
+    rir: ["3-4","3","2","1-2"],
+    sessions: {
+      A: {
+        name: "Glute / Quad + Push",
+        exercises: [
+          makeExo("m2a1","Hip Thrust Booty Builder","Fessiers",4,10,"2-1-1-2",90,null,5,"fessiers","hip+thrust+booty+builder+machine+technique","Même technique que Méso 1. On passe à 4 séries de 10 reps — charge plus lourde, moins de reps. Concentre-toi sur la contraction en haut."),
+          makeExo("m2a2","Hack Squat pieds hauts","Quadriceps · Fessiers",3,12,"3-1-1-0",90,null,5,"quadriceps","hack+squat+pieds+hauts+fessiers+technique","Dos contre le dossier, pieds hauts et largeur d'épaules sur la plateforme. Descendre lentement (3s) profond, remonter en poussant les talons. Plus d'amplitude que la presse = plus de travail fessier."),
+          makeExo("m2a3","Abduction machine","Moyen fessier",3,15,"2-1-1-2",60,null,5,"fessiers","abduction+machine+fessiers+technique","Identique à Méso 1. Continue de progresser en charge."),
+          makeExo("m2a4","Développé convergente Panatta","Pectoraux · Triceps",3,12,"2-1-1-0",75,null,5,"pectoraux","développé+convergent+machine+pectoraux+technique","Identique à Méso 1. Continue de monter la charge progressivement."),
+          makeExo("m2a5","Élévations latérales câble","Deltoïdes latéraux",3,15,"2-0-1-1",45,null,2.5,"epaules","elevation+laterale+cable+un+bras+technique","Identique à Méso 1.",true),
+        ],
+        core: {rounds:2, exercises:["Dead Bug lesté (1-2 kg) × 10/côté","Planche avant-bras — 40s"]},
+        coreYt: ["dead+bug+leste+technique","planche+avant+bras+gainage+technique"],
+        finishers: {
+          "1-2": {name:"Le Chipper", format:"For time · Cap 10 min", detail:"• Rameur 250m\n• Ball Slam × 15 (8 kg)\n• Box Step-Up × 20 (alternés)\n• KB Swing × 15 (16 kg)\n• Broad Jump × 10\n• Assault Bike 15 cal", yt:"chipper+crossfit+workout"},
+          "3-4": {name:"Le Triathlon Mini", format:"For time · Cap 10 min", detail:"• Assault Bike 15 cal\n• Bear Crawl 20m\n• Wall Ball × 12 (6 kg)\n• Ski Erg 15 cal\n• Broad Jump 20m\n• KB Swing × 15 (16 kg)\n• Rameur 200m", yt:"bear+crawl+technique+exercice"},
+        }
+      },
+      B: {
+        name: "Glute / Ischio + Pull",
+        exercises: [
+          makeExo("m2b1","RDL barre","Ischio-jambiers · Fessiers",4,10,"3-1-1-0",90,null,5,"ischios","romanian+deadlift+barre+technique+femme","Même mouvement que le RDL haltères mais avec une barre. Permet de charger plus lourd. Descente 3s contrôlée, squeeze fessiers en haut. Calibrer la charge en S5."),
+          makeExo("m2b2","Leg Curl assis machine","Ischio-jambiers",3,12,"3-0-1-1",75,null,5,"ischios","leg+curl+assis+machine+technique","Assise, rouleau devant les chevilles. Plier les jambes sous le siège (1s), maintenir 1s, relâcher lentement (3s). Nouvel angle par rapport au leg curl allongé = nouveau stimulus sur les ischios."),
+          makeExo("m2b3","Extension dos rond chaise romaine","Fessiers · Ischio",3,12,"2-1-1-2",75,null,5,"fessiers","back+extension+glute+focus+round+back","Même technique. Si le poids de corps est facile (< RIR cible), ajouter une plaque de 5 kg contre la poitrine.",false,true),
+          makeExo("m2b4","Tirage horizontal machine Panatta","Dos · Biceps",3,12,"2-1-1-1",75,null,5,"dos","tirage+horizontal+machine+panatta+technique","Machine guidée = charge plus lourde possible. Tirer vers le nombril, serrer les omoplates, contrôler le retour. Calibrer en S5."),
+          makeExo("m2b5","Reverse Fly machine","Deltoïde post · Rhomboïdes",3,15,"2-0-1-2",60,null,2.5,"epaules","reverse+fly+machine+pec+deck+inverse+technique","Identique à Méso 1. Continue de monter."),
+        ],
+        core: {rounds:2, exercises:["Pallof Press câble — 10/côté (hold 3s)","Ab Wheel depuis les genoux × 8"]},
+        coreYt: ["pallof+press+cable+technique+core","ab+wheel+genoux+technique+debutant"],
+        finishers: {
+          "1-2": {name:"Sled & Ropes", format:"4 rounds · 60s repos", detail:"• Sled Push 20m (25-30 kg)\n• Battle Ropes 20s\n• Sled Pull corde 20m (même charge)", yt:"sled+push+pull+technique"},
+          "3-4": {name:"EMOM Fun", format:"EMOM 10 min (2 tours)", detail:"• Min 1 : Sled Push 20m (30 kg)\n• Min 2 : Ball Slam × 10 (8 kg)\n• Min 3 : Broad Jump × 6\n• Min 4 : KB Swing × 12 (16 kg)\n• Min 5 : Box Step-Up × 8/côté", yt:"emom+workout+crossfit"},
+        }
+      },
+      C: {
+        name: "Glute Unilatéral + Épaules",
+        exercises: [
+          makeExo("m2c1","Fentes marchées haltères","Quadriceps · Fessiers",4,10,"2-0-1-0",75,null,2.5,"fessiers","fentes+marchees+halteres+technique+femme","Haltères le long du corps. Faire un grand pas en avant, descendre le genou arrière vers le sol (1s), pousser pour avancer. Garder le buste droit, pas de pas trop courts.",true),
+          makeExo("m2c2","Kickback machine","Fessiers",3,12,"2-0-1-2",60,null,5,"fessiers","kickback+machine+fessiers+technique","Identique à Méso 1. Continue de monter en charge.",true),
+          makeExo("m2c3","Sumo Squat haltère lourd","Adducteurs · Fessiers",3,12,"3-1-1-0",75,null,4,"fessiers","sumo+squat+haltere+lourd+technique","Même position que le Sumo KB mais avec un haltère lourd tenu verticalement. Permet de charger plus. Même tempo, même exécution."),
+          makeExo("m2c4","Shoulder Press machine Panatta","Deltoïdes",3,12,"2-0-1-1",75,null,5,"epaules","shoulder+press+machine+technique+debutant","Identique à Méso 1."),
+          makeExo("m2c5","Lat Pulldown prise large","Grand dorsal",3,12,"2-1-1-1",75,null,5,"dos","lat+pulldown+prise+large+technique","Prise large, tirer vers la poitrine en sortant le torse. Plus de travail sur le grand dorsal que la prise neutre = meilleur V-shape."),
+        ],
+        core: {rounds:2, exercises:["Farmer Walk KB — 40m (2×14 kg)","Gainage latéral — 35s/côté"]},
+        coreYt: ["farmer+walk+kettlebell+technique","gainage+lateral+technique"],
+        finishers: {
+          "1-2": {name:"Tabata Mixte", format:"8 rounds · 20s effort / 10s repos", detail:"• Rounds 1, 3, 5, 7 : Squat Jump\n• Rounds 2, 4, 6, 8 : Ball Slam (6-8 kg)", yt:"squat+jump+technique+exercice"},
+          "3-4": {name:"L'Échelle qui Monte", format:"For time · Cap 10 min", detail:"Échelle ascendante — 3 tours :\n• Assault Bike 5/10/15 cal\n• Broad Jump 2/4/6\n• Battle Ropes 10s/15s/20s\n• Squat Jump 4/6/8\n→ Chaque tour la dose augmente", yt:"battle+ropes+technique+debutant"},
+        }
+      }
+    }
+  },
+  { // MESO 3 — S9-S10
+    id: 3, name: "Peak + Deload", weeks: [9,10],
+    rir: ["0-1","5+"],
+    sessions: {
+      A: {
+        name: "Glute / Quad + Push",
+        exercises: [
+          makeExo("m3a1","Hip Thrust Booty Builder","Fessiers",4,10,"2-1-1-2",90,null,5,"fessiers","hip+thrust+booty+builder+machine+technique","Semaine Peak : tout donner, RIR 0-1. Semaine Deload : 2 séries seulement, charge −35%."),
+          makeExo("m3a2","Hack Squat pieds hauts","Quadriceps · Fessiers",4,12,"3-1-1-0",90,null,5,"quadriceps","hack+squat+pieds+hauts+fessiers+technique","S9 : 4 séries, charge max. S10 : 2 séries légères."),
+          makeExo("m3a3","Abduction machine","Moyen fessier",3,15,"2-1-1-2",60,null,5,"fessiers","abduction+machine+fessiers+technique","S9 : pousse au max. S10 : léger et fluide."),
+          makeExo("m3a4","Développé convergente Panatta","Pectoraux · Triceps",3,12,"2-1-1-0",75,null,5,"pectoraux","développé+convergent+machine+pectoraux+technique",""),
+          makeExo("m3a5","Élévations latérales câble","Deltoïdes latéraux",3,15,"2-0-1-1",45,null,2.5,"epaules","elevation+laterale+cable+un+bras+technique","",true),
+        ],
+        core: {rounds:2, exercises:["Dead Bug lesté × 10/côté","Planche avant-bras — 45s"]},
+        coreYt: ["dead+bug+leste+technique","planche+avant+bras+gainage+technique"],
+        finishers: {
+          "1": {name:"Tout Dedans", format:"AMRAP 6 min", detail:"• Ball Slam × 5 (8 kg)\n• Broad Jump × 5\n• Assault Bike 10 cal", yt:"amrap+workout+crossfit"},
+          "2": {name:"Récupération", format:"10 min", detail:"Marche inclinée tapis (5-8%, 5.5-6 km/h)\nou vélo léger\n\n→ Pas de finisher intense, juste du flux 🌸", yt:""},
+        }
+      },
+      B: {
+        name: "Glute / Ischio + Pull",
+        exercises: [
+          makeExo("m3b1","RDL barre","Ischio-jambiers · Fessiers",4,10,"3-1-1-0",90,null,5,"ischios","romanian+deadlift+barre+technique+femme","S9 : tout donner. S10 : léger."),
+          makeExo("m3b2","Leg Curl assis machine","Ischio-jambiers",4,12,"3-0-1-1",75,null,5,"ischios","leg+curl+assis+machine+technique","S9 : 4 séries. S10 : 2 séries."),
+          makeExo("m3b3","Extension dos rond chaise romaine","Fessiers · Ischio",3,12,"2-1-1-2",75,null,5,"fessiers","back+extension+glute+focus+round+back","",false,true),
+          makeExo("m3b4","Tirage horizontal machine Panatta","Dos · Biceps",3,12,"2-1-1-1",75,null,5,"dos","tirage+horizontal+machine+panatta+technique",""),
+          makeExo("m3b5","Reverse Fly machine","Deltoïde post · Rhomboïdes",3,15,"2-0-1-2",60,null,2.5,"epaules","reverse+fly+machine+pec+deck+inverse+technique",""),
+        ],
+        core: {rounds:2, exercises:["Pallof Press câble — 10/côté (hold 3s)","Ab Wheel genoux × 10"]},
+        coreYt: ["pallof+press+cable+technique+core","ab+wheel+genoux+technique+debutant"],
+        finishers: {
+          "1": {name:"Le Benchmark", format:"For time", detail:"• Rameur 500m\n• KB Swing × 20 (16 kg)\n• Sled Push 40m (30 kg)\n• Wall Ball × 15 (6 kg)\n\n⏱ Note ton chrono !", yt:"rameur+500m+technique"},
+          "2": {name:"Récupération", format:"10 min", detail:"Marche inclinée tapis (5-8%, 5.5-6 km/h)\nou vélo léger\n\n→ Récupération active 🌸", yt:""},
+        }
+      },
+      C: {
+        name: "Glute Unilatéral + Épaules",
+        exercises: [
+          makeExo("m3c1","Fentes marchées haltères","Quadriceps · Fessiers",4,10,"2-0-1-0",75,null,2.5,"fessiers","fentes+marchees+halteres+technique+femme","",true),
+          makeExo("m3c2","Kickback machine","Fessiers",4,12,"2-0-1-2",60,null,5,"fessiers","kickback+machine+fessiers+technique","S9 : 4 séries. S10 : 2 séries.",true),
+          makeExo("m3c3","Sumo Squat haltère lourd","Adducteurs · Fessiers",3,12,"3-1-1-0",75,null,4,"fessiers","sumo+squat+haltere+lourd+technique",""),
+          makeExo("m3c4","Shoulder Press machine Panatta","Deltoïdes",3,12,"2-0-1-1",75,null,5,"epaules","shoulder+press+machine+technique+debutant",""),
+          makeExo("m3c5","Lat Pulldown prise large","Grand dorsal",3,12,"2-1-1-1",75,null,5,"dos","lat+pulldown+prise+large+technique",""),
+        ],
+        core: {rounds:2, exercises:["Farmer Walk KB — 40m (2×16 kg)","Gainage latéral — 40s/côté"]},
+        coreYt: ["farmer+walk+kettlebell+technique","gainage+lateral+technique"],
+        finishers: {
+          "1": {name:"Le Dernier Tour", format:"3 rounds for time", detail:"• Ski Erg 15 cal\n• Box Step-Up × 10/côté\n• Bear Crawl 15m\n• Battle Ropes 15s", yt:"ski+erg+technique+debutant"},
+          "2": {name:"Récupération", format:"10 min", detail:"Marche inclinée tapis ou vélo léger\n\n→ Bravo, programme terminé ! 🎉🌸", yt:""},
+        }
+      }
+    }
+  }
+];
+
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+
+let state = loadState();
+
+function defaultState() {
+  return {
+    currentMeso: 1,
+    currentWeek: 1,
+    unlockedMesos: [1],
+    history: [],
+    exerciseData: {},
+    finisherData: {},
+    activeWorkout: null,
+  };
+}
+
+function loadState() {
+  try {
+    const s = localStorage.getItem('manon_fit_state');
+    return s ? {...defaultState(), ...JSON.parse(s)} : defaultState();
+  } catch(e) { return defaultState(); }
+}
+
+function saveState() {
+  localStorage.setItem('manon_fit_state', JSON.stringify(state));
+}
+
+function getExoKey(mesoId, sessionKey, exoId, week) {
+  return `m${mesoId}_${sessionKey}_${exoId}_w${week}`;
+}
+
+function getLastExoData(mesoId, sessionKey, exoId, currentWeek) {
+  for (let w = currentWeek - 1; w >= 1; w--) {
+    const key = getExoKey(mesoId, sessionKey, exoId, w);
+    if (state.exerciseData[key]) return state.exerciseData[key];
+  }
+  // Check previous meso same exercise pattern
+  if (mesoId > 1) {
+    for (let m = mesoId - 1; m >= 1; m--) {
+      const meso = MESOS[m-1];
+      for (let w = meso.weeks[meso.weeks.length-1]; w >= meso.weeks[0]; w--) {
+        // Try to find same exercise in previous meso
+        for (const sk of ['A','B','C']) {
+          const sess = meso.sessions[sk];
+          for (const ex of sess.exercises) {
+            if (ex.name === getExoByIds(mesoId, sessionKey, exoId)?.name) {
+              const key = getExoKey(m, sk, ex.id, w);
+              if (state.exerciseData[key]) return state.exerciseData[key];
+            }
+          }
+        }
+      }
+    }
+  }
+  return null;
+}
+
+function getExoByIds(mesoId, sessionKey, exoId) {
+  const meso = MESOS[mesoId-1];
+  if (!meso) return null;
+  const sess = meso.sessions[sessionKey];
+  if (!sess) return null;
+  return sess.exercises.find(e => e.id === exoId);
+}
+
+function getFinisherKey(weekRange, sessionKey) {
+  const w = state.currentWeek;
+  const meso = MESOS[state.currentMeso - 1];
+  if (meso.id === 3) {
+    return w === meso.weeks[0] ? "1" : "2";
+  }
+  const midpoint = meso.weeks[0] + Math.floor(meso.weeks.length / 2);
+  if (w < midpoint) return `${meso.weeks[0]}-${midpoint-1}`;
+  return `${midpoint}-${meso.weeks[meso.weeks.length-1]}`;
+}
+
+// ═══════════════════════════════════════
+// TIMER
+// ═══════════════════════════════════════
+
+let timerInterval = null;
+let timerSeconds = 0;
+
+function startTimer(seconds) {
+  clearInterval(timerInterval);
+  timerSeconds = seconds;
+  document.getElementById('restTimer').classList.add('active');
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    timerSeconds--;
+    updateTimerDisplay();
+    if (timerSeconds <= 0) {
+      clearInterval(timerInterval);
+      if (navigator.vibrate) navigator.vibrate([200,100,200,100,200]);
+      setTimeout(() => {
+        document.getElementById('restTimer').classList.remove('active');
+      }, 2000);
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(Math.abs(timerSeconds) / 60);
+  const s = Math.abs(timerSeconds) % 60;
+  document.getElementById('timerDisplay').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+}
+
+function addTime(sec) {
+  timerSeconds += sec;
+  if (timerSeconds < 0) timerSeconds = 0;
+  updateTimerDisplay();
+}
+
+function skipTimer() {
+  clearInterval(timerInterval);
+  document.getElementById('restTimer').classList.remove('active');
+}
+
+// ═══════════════════════════════════════
+// SCREENS
+// ═══════════════════════════════════════
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+  if (name === 'home') {
+    document.getElementById('homeScreen').classList.add('active');
+    document.getElementById('navHome').classList.add('active');
+    renderHome();
+  } else if (name === 'history') {
+    document.getElementById('historyScreen').classList.add('active');
+    document.getElementById('navHistory').classList.add('active');
+    renderHistory();
+  } else if (name === 'settings') {
+    document.getElementById('settingsScreen').classList.add('active');
+    document.getElementById('navSettings').classList.add('active');
+    renderSettings();
+  } else if (name === 'workout') {
+    document.getElementById('workoutScreen').classList.add('active');
+    document.getElementById('navHome').classList.add('active');
+  }
+}
+
+// ═══════════════════════════════════════
+// HOME
+// ═══════════════════════════════════════
+
+function renderHome() {
+  // Motivation
+  const q = MOTIVATION_QUOTES[Math.floor(Math.random() * MOTIVATION_QUOTES.length)];
+  document.getElementById('homeMotivation').textContent = q;
+
+  // Meso selector
+  const mesoSel = document.getElementById('mesoSelector');
+  mesoSel.innerHTML = MESOS.map(m => {
+    const isActive = state.currentMeso === m.id;
+    const isLocked = !state.unlockedMesos.includes(m.id);
+    return `<button class="meso-btn ${isActive?'active':''} ${isLocked?'locked':''}"
+      onclick="${isLocked ? '' : `selectMeso(${m.id})`}">${m.name}</button>`;
+  }).join('');
+
+  // Week info
+  const meso = MESOS[state.currentMeso - 1];
+  const weekIdx = state.currentWeek - meso.weeks[0];
+  document.getElementById('currentWeekDisplay').textContent = `S${state.currentWeek}`;
+  document.getElementById('currentRIR').textContent = `RIR ${meso.rir[Math.min(weekIdx, meso.rir.length-1)]}`;
+
+  // Session grid
+  const grid = document.getElementById('sessionGrid');
+  grid.innerHTML = ['A','B','C'].map(key => {
+    const sess = meso.sessions[key];
+    const lastDone = getLastSessionDate(state.currentMeso, key);
+    return `<div class="session-card" onclick="startWorkout('${key}')">
+      <div class="letter">${key}</div>
+      <div class="label">${sess.name}</div>
+      ${lastDone ? `<div class="last-done">✓ ${lastDone}</div>` : '<div class="last-done">Pas encore faite</div>'}
+    </div>`;
+  }).join('');
+}
+
+function getLastSessionDate(mesoId, sessionKey) {
+  const entries = state.history.filter(h => h.mesoId === mesoId && h.sessionKey === sessionKey);
+  if (entries.length === 0) return null;
+  const last = entries[entries.length - 1];
+  return new Date(last.date).toLocaleDateString('fr-FR', {day:'numeric', month:'short'});
+}
+
+function selectMeso(id) {
+  if (!state.unlockedMesos.includes(id)) return;
+  state.currentMeso = id;
+  state.currentWeek = MESOS[id-1].weeks[0];
+  saveState();
+  renderHome();
+}
+
+function advanceWeek() {
+  const meso = MESOS[state.currentMeso - 1];
+  const maxWeek = meso.weeks[meso.weeks.length - 1];
+  if (state.currentWeek < maxWeek) {
+    state.currentWeek++;
+    saveState();
+    renderHome();
+  }
+}
+
+// ═══════════════════════════════════════
+// WORKOUT
+// ═══════════════════════════════════════
+
+function startWorkout(sessionKey) {
+  const meso = MESOS[state.currentMeso - 1];
+  const session = meso.sessions[sessionKey];
+  const weekIdx = state.currentWeek - meso.weeks[0];
+  const rir = meso.rir[Math.min(weekIdx, meso.rir.length-1)];
+  const isDeload = state.currentMeso === 3 && state.currentWeek === 10;
+
+  state.activeWorkout = {
+    mesoId: state.currentMeso, sessionKey, week: state.currentWeek,
+    sets: {}, finisherResult: '', startTime: Date.now()
+  };
+
+  // Init sets
+  session.exercises.forEach(exo => {
+    const numSets = isDeload ? 2 : exo.sets;
+    const lastData = getLastExoData(state.currentMeso, sessionKey, exo.id, state.currentWeek);
+    const suggestedWeight = lastData ? lastData.weight + exo.increment : exo.startWeight;
+    state.activeWorkout.sets[exo.id] = [];
+    for (let i = 0; i < numSets; i++) {
+      state.activeWorkout.sets[exo.id].push({
+        reps: null,
+        weight: suggestedWeight || '',
+        done: false
+      });
+    }
+  });
+
+  // Build workout HTML
+  const motiv = MOTIVATION_QUOTES[Math.floor(Math.random() * MOTIVATION_QUOTES.length)];
+
+  let html = `
+    <button class="back-btn" onclick="confirmLeaveWorkout()">← Retour</button>
+    <div class="workout-header">
+      <h2>Séance ${sessionKey} — ${session.name}</h2>
+      <div class="meta">S${state.currentWeek} · ${meso.name} · RIR ${rir}${isDeload ? ' · 🌸 DELOAD' : ''}</div>
+    </div>
+    <div class="motivation-card">${motiv}</div>
+  `;
+
+  // Warmup
+  html += `<div class="section-header">🔥 Échauffement</div><div class="card">`;
+  WARMUP.forEach(w => {
+    html += `<div class="warmup-item">
+      <div class="warmup-bullet"></div>
+      <div class="warmup-text"><strong>${w.name}</strong> — ${w.duration}</div>
+      <a class="warmup-video" href="https://www.youtube.com/results?search_query=${w.yt}" target="_blank">📹</a>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // Exercises
+  html += `<div class="section-header">💪 Exercices</div>`;
+  session.exercises.forEach(exo => {
+    const numSets = isDeload ? 2 : exo.sets;
+    const lastData = getLastExoData(state.currentMeso, sessionKey, exo.id, state.currentWeek);
+    const suggestedWeight = lastData ? lastData.weight + exo.increment : exo.startWeight;
+
+    // Charge suggestion message
+    let suggestionHtml = '';
+    if (lastData && suggestedWeight) {
+      const msg = CHARGE_MESSAGES[Math.floor(Math.random() * CHARGE_MESSAGES.length)];
+      const text = msg.tpl.replace('{old}', lastData.weight).replace('{new}', suggestedWeight);
+      suggestionHtml = `<div class="charge-suggestion"><span class="emoji">💡</span> ${text}</div>`;
+    }
+
+    html += `<div class="exo-card" data-cat="${exo.cat}">
+      <div class="exo-top">
+        <div>
+          <div class="exo-name">${exo.name}${exo.unilateral ? ' (chaque côté)' : ''}</div>
+          <div class="exo-muscles">${exo.muscles}</div>
+        </div>
+      </div>
+      <div class="exo-params">
+        <span>📐 ${numSets}×${exo.reps}</span>
+        <span>⏱ T: ${exo.tempo}</span>
+        <span>💤 ${exo.rest}s</span>
+      </div>
+      <div class="exo-actions">
+        <button class="exo-action-btn" onclick="showExoDetail('${exo.id}','${sessionKey}')">📖 Détail</button>
+        <a class="exo-action-btn" href="https://www.youtube.com/results?search_query=${exo.yt}" target="_blank" style="text-decoration:none;">📹 Vidéo</a>
+      </div>
+      ${suggestionHtml}
+      <div class="sets-grid" id="sets_${exo.id}">
+        ${Array.from({length: numSets}, (_, i) => renderSetRow(exo, i, suggestedWeight)).join('')}
+      </div>
+    </div>`;
+  });
+
+  // Core
+  html += `<div class="section-header">🧘 Core</div><div class="card">`;
+  html += `<div class="core-rounds">${session.core.rounds} tours</div><ul class="core-list">`;
+  session.core.exercises.forEach((c, i) => {
+    const ytLink = session.coreYt[i] ? `<a class="warmup-video" href="https://www.youtube.com/results?search_query=${session.coreYt[i]}" target="_blank" style="float:right;">📹</a>` : '';
+    html += `<li>${ytLink}${c}</li>`;
+  });
+  html += `</ul></div>`;
+
+  // Finisher
+  const finKey = getFinisherKey();
+  const finisher = session.finishers[finKey];
+  if (finisher) {
+    html += `<div class="section-header">🔥 Finisher</div>
+    <div class="finisher-card">
+      <div class="finisher-title">${finisher.name}</div>
+      <div class="finisher-format">${finisher.format}</div>
+      <div class="finisher-detail">${finisher.detail.replace(/\n/g, '<br>')}</div>
+      ${finisher.yt ? `<a class="exo-action-btn" href="https://www.youtube.com/results?search_query=${finisher.yt}" target="_blank" style="text-decoration:none;margin-bottom:10px;display:inline-flex;">📹 Vidéo</a>` : ''}
+      <div class="finisher-log">
+        <input type="text" id="finisherResult" placeholder="Résultat (temps, rounds, cal...)" value="${state.activeWorkout.finisherResult || ''}">
+      </div>
+    </div>`;
+  }
+
+  // Score + Finish button
+  html += `
+    <div class="score-card" id="liveScore">
+      <div class="score-label">Score de séance</div>
+      <div class="score-value" id="scoreValue">0.0</div>
+      <div class="score-label">/10</div>
+    </div>
+    <button class="finish-workout-btn" onclick="finishWorkout()">✅ Terminer la séance</button>
+    <div style="height:24px;"></div>
+  `;
+
+  document.getElementById('workoutScreen').innerHTML = html;
+  showScreen('workout');
+  updateScore();
+}
+
+function renderSetRow(exo, idx, suggestedWeight) {
+  const setData = state.activeWorkout.sets[exo.id][idx];
+  const w = setData.weight || suggestedWeight || '';
+  return `<div class="set-row">
+    <div class="set-label">S${idx+1}</div>
+    <input class="set-input" type="number" inputmode="decimal" placeholder="${exo.reps}" 
+      id="reps_${exo.id}_${idx}" value="${setData.reps || ''}"
+      onchange="updateSet('${exo.id}',${idx},'reps',this.value)">
+    <div class="set-unit">reps</div>
+    <input class="set-input" type="number" inputmode="decimal" placeholder="${w}" 
+      id="weight_${exo.id}_${idx}" value="${w}"
+      onchange="updateSet('${exo.id}',${idx},'weight',this.value)">
+    <div class="set-unit">kg</div>
+    <div class="set-check ${setData.done ? 'done' : ''}" 
+      id="check_${exo.id}_${idx}"
+      onclick="toggleSet('${exo.id}',${idx},${exo.rest})">
+      ${setData.done ? '✓' : ''}
+    </div>
+  </div>`;
+}
+
+function updateSet(exoId, setIdx, field, value) {
+  if (!state.activeWorkout) return;
+  const val = parseFloat(value) || null;
+  state.activeWorkout.sets[exoId][setIdx][field] = val;
+  updateScore();
+}
+
+function toggleSet(exoId, setIdx, restSeconds) {
+  if (!state.activeWorkout) return;
+  const set = state.activeWorkout.sets[exoId][setIdx];
+  set.done = !set.done;
+
+  // Auto-fill reps from placeholder if empty
+  if (set.done && !set.reps) {
+    const input = document.getElementById(`reps_${exoId}_${setIdx}`);
+    set.reps = parseInt(input.placeholder);
+    input.value = set.reps;
+  }
+  // Auto-fill weight from placeholder if empty
+  if (set.done && !set.weight) {
+    const input = document.getElementById(`weight_${exoId}_${setIdx}`);
+    if (input.placeholder) {
+      set.weight = parseFloat(input.placeholder);
+      input.value = set.weight;
+    }
+  }
+
+  const check = document.getElementById(`check_${exoId}_${setIdx}`);
+  check.className = `set-check ${set.done ? 'done' : ''}`;
+  check.textContent = set.done ? '✓' : '';
+
+  if (set.done && restSeconds) startTimer(restSeconds);
+  updateScore();
+}
+
+function updateScore() {
+  if (!state.activeWorkout) return;
+  const meso = MESOS[state.activeWorkout.mesoId - 1];
+  const session = meso.sessions[state.activeWorkout.sessionKey];
+  let totalSets = 0, doneSets = 0, totalTargetReps = 0, doneReps = 0;
+
+  session.exercises.forEach(exo => {
+    const sets = state.activeWorkout.sets[exo.id] || [];
+    sets.forEach(s => {
+      totalSets++;
+      totalTargetReps += exo.reps;
+      if (s.done) {
+        doneSets++;
+        doneReps += (s.reps || 0);
+      }
+    });
+  });
+
+  const setRatio = totalSets > 0 ? doneSets / totalSets : 0;
+  const repRatio = totalTargetReps > 0 ? Math.min(doneReps / totalTargetReps, 1) : 0;
+  const score = ((setRatio * 0.6 + repRatio * 0.4) * 10).toFixed(1);
+
+  const el = document.getElementById('scoreValue');
+  if (el) el.textContent = score;
+  return parseFloat(score);
+}
+
+function finishWorkout() {
+  if (!state.activeWorkout) return;
+  const score = updateScore();
+  const finInput = document.getElementById('finisherResult');
+
+  // Determine max weight used per exercise for charge tracking
+  const meso = MESOS[state.activeWorkout.mesoId - 1];
+  const session = meso.sessions[state.activeWorkout.sessionKey];
+
+  session.exercises.forEach(exo => {
+    const sets = state.activeWorkout.sets[exo.id] || [];
+    const doneSets = sets.filter(s => s.done);
+    if (doneSets.length > 0) {
+      const maxWeight = Math.max(...doneSets.map(s => s.weight || 0));
+      const key = getExoKey(state.activeWorkout.mesoId, state.activeWorkout.sessionKey, exo.id, state.activeWorkout.week);
+      state.exerciseData[key] = {weight: maxWeight, sets: doneSets.map(s => ({reps: s.reps, weight: s.weight}))};
+    }
+  });
+
+  // Save history
+  state.history.push({
+    date: new Date().toISOString(),
+    mesoId: state.activeWorkout.mesoId,
+    mesoName: meso.name,
+    sessionKey: state.activeWorkout.sessionKey,
+    sessionName: session.name,
+    week: state.activeWorkout.week,
+    score: score,
+    finisherResult: finInput ? finInput.value : '',
+    duration: Math.round((Date.now() - state.activeWorkout.startTime) / 60000),
+    sets: state.activeWorkout.sets,
+  });
+
+  // Save finisher benchmark
+  if (finInput && finInput.value) {
+    const fKey = `fin_m${state.activeWorkout.mesoId}_${state.activeWorkout.sessionKey}_w${state.activeWorkout.week}`;
+    state.finisherData[fKey] = finInput.value;
+  }
+
+  state.activeWorkout = null;
+  saveState();
+  showScreen('home');
+}
+
+function confirmLeaveWorkout() {
+  if (confirm('Quitter la séance ? Les données non sauvegardées seront perdues.')) {
+    state.activeWorkout = null;
+    showScreen('home');
+  }
+}
+
+// ═══════════════════════════════════════
+// EXERCISE DETAIL MODAL
+// ═══════════════════════════════════════
+
+function showExoDetail(exoId, sessionKey) {
+  const meso = MESOS[state.currentMeso - 1];
+  const session = meso.sessions[sessionKey];
+  const exo = session.exercises.find(e => e.id === exoId);
+  if (!exo) return;
+
+  const modal = document.getElementById('modal');
+  const content = document.getElementById('modalContent');
+
+  content.innerHTML = `
+    <button class="modal-close" onclick="document.getElementById('modal').classList.remove('active')">✕</button>
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:22px;margin-bottom:4px;padding-right:40px;">${exo.name}</h2>
+    <div style="font-size:13px;color:var(--text-light);margin-bottom:16px;">${exo.muscles}</div>
+    <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+      <span class="exo-action-btn">📐 ${exo.sets}×${exo.reps}</span>
+      <span class="exo-action-btn">⏱ T: ${exo.tempo}</span>
+      <span class="exo-action-btn">💤 ${exo.rest}s</span>
+    </div>
+    ${exo.desc ? `<div style="font-size:14px;line-height:1.6;margin-bottom:16px;color:var(--text);">${exo.desc}</div>` : ''}
+    <a href="https://www.youtube.com/results?search_query=${exo.yt}" target="_blank"
+      style="display:inline-flex;align-items:center;gap:6px;background:var(--blush);border:1px solid var(--rose-light);border-radius:10px;padding:10px 16px;color:var(--rose-dark);text-decoration:none;font-weight:700;font-size:14px;">
+      📹 Voir la vidéo
+    </a>
+  `;
+
+  modal.classList.add('active');
+}
+
+function closeModal(event) {
+  if (event.target === document.getElementById('modal')) {
+    document.getElementById('modal').classList.remove('active');
+  }
+}
+
+// ═══════════════════════════════════════
+// HISTORY
+// ═══════════════════════════════════════
+
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  if (state.history.length === 0) {
+    list.innerHTML = `<div class="card" style="text-align:center;color:var(--text-light);padding:32px;">
+      Aucune séance enregistrée pour l'instant 🌸<br>Lance ta première séance !
+    </div>`;
+    return;
+  }
+
+  list.innerHTML = [...state.history].reverse().map(h => {
+    const d = new Date(h.date);
+    const dateStr = d.toLocaleDateString('fr-FR', {weekday:'short', day:'numeric', month:'short'});
+    return `<div class="history-item">
+      <div class="left">
+        <div class="date">${dateStr} · S${h.week} · ${h.mesoName}</div>
+        <div class="session-name">Séance ${h.sessionKey} — ${h.sessionName}</div>
+        <div style="font-size:11px;color:var(--text-light);margin-top:2px;">
+          ${h.duration ? h.duration + ' min' : ''}
+          ${h.finisherResult ? ' · Finisher: ' + h.finisherResult : ''}
+        </div>
+      </div>
+      <div class="score-badge">${h.score}</div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════
+
+function renderSettings() {
+  const div = document.getElementById('mesoSettings');
+  div.innerHTML = MESOS.map(m => {
+    const unlocked = state.unlockedMesos.includes(m.id);
+    return `<div class="setting-row">
+      <div>
+        <div class="setting-label">Méso ${m.id} — ${m.name}</div>
+        <div class="setting-desc">S${m.weeks[0]}-S${m.weeks[m.weeks.length-1]}</div>
+      </div>
+      <button class="unlock-btn ${unlocked ? 'unlocked' : ''}"
+        onclick="${unlocked ? '' : `unlockMeso(${m.id})`}">
+        ${unlocked ? '✓ Débloqué' : '🔓 Débloquer'}
+      </button>
+    </div>`;
+  }).join('');
+}
+
+function unlockMeso(id) {
+  if (!state.unlockedMesos.includes(id)) {
+    if (confirm(`Débloquer le Mésocycle ${id} ?`)) {
+      state.unlockedMesos.push(id);
+      state.currentMeso = id;
+      state.currentWeek = MESOS[id-1].weeks[0];
+      saveState();
+      renderSettings();
+      renderHome();
+    }
+  }
+}
+
+function resetAll() {
+  if (confirm('⚠️ Supprimer TOUTES les données ? Cette action est irréversible.')) {
+    if (confirm('Vraiment tout effacer ?')) {
+      localStorage.removeItem('manon_fit_state');
+      state = defaultState();
+      showScreen('home');
+    }
+  }
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+
+renderHome();
+</script>
+</body>
+</html>
