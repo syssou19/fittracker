@@ -391,7 +391,7 @@ h1,h2,h3 { font-family: 'Cormorant Garamond', serif; }
   <div class="session-grid" id="sessionGrid"></div>
 
   <div class="card" id="weekInfo" style="margin-top:8px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
       <div>
         <div style="font-size:12px;color:var(--text-light);">Semaine en cours</div>
         <div style="font-weight:700;font-size:18px;" id="currentWeekDisplay">S1</div>
@@ -400,8 +400,9 @@ h1,h2,h3 { font-family: 'Cormorant Garamond', serif; }
         <div style="font-size:12px;color:var(--text-light);">RIR cible</div>
         <div style="font-weight:700;font-size:18px;color:var(--rose-dark);" id="currentRIR">3-4</div>
       </div>
-      <div>
-        <button class="exo-action-btn" onclick="advanceWeek()" style="font-size:12px;">Semaine +1 ▶</button>
+      <div style="display:flex;gap:6px;">
+        <button class="exo-action-btn" onclick="changeWeek(-1)" style="font-size:13px;padding:6px 10px;">◀</button>
+        <button class="exo-action-btn" onclick="changeWeek(1)" style="font-size:13px;padding:6px 10px;">▶</button>
       </div>
     </div>
   </div>
@@ -593,7 +594,7 @@ const MESOS = [
           makeExo("m2c1","Fentes marchées haltères","Quadriceps · Fessiers",4,10,"2-0-1-0",75,null,2.5,"fessiers","fentes+marchees+halteres+technique+femme","Haltères le long du corps. Faire un grand pas en avant, descendre le genou arrière vers le sol (1s), pousser pour avancer. Garder le buste droit, pas de pas trop courts.",true),
           makeExo("m2c2","Kickback machine","Fessiers",3,12,"2-0-1-2",60,null,5,"fessiers","kickback+machine+fessiers+technique","Identique à Méso 1. Continue de monter en charge.",true),
           makeExo("m2c3","Sumo Squat haltère lourd","Adducteurs · Fessiers",3,12,"3-1-1-0",75,null,4,"fessiers","sumo+squat+haltere+lourd+technique","Même position que le Sumo KB mais avec un haltère lourd tenu verticalement. Permet de charger plus. Même tempo, même exécution."),
-          makeExo("m2c4","Shoulder Press machine Panatta","Deltoïdes",3,12,"2-0-1-1",75,null,5,"epaules","shoulder+press+machine+technique+debutant","Identique à Méso 1."),
+          makeExo("m2c4","Développé militaire haltères assis","Deltoïdes",3,12,"2-0-1-1",75,4,2.5,"epaules","developpe+militaire+halteres+assis+technique+femme","Assise sur banc à dossier 90°, haltères au niveau des épaules paumes vers l'avant. Pousser vers le haut (1s) sans cogner en haut, maintenir 1s, redescendre lentement (2s). Garder le core gainé, ne pas cambrer le dos."),
           makeExo("m2c5","Lat Pulldown prise large","Grand dorsal",3,12,"2-1-1-1",75,null,5,"dos","lat+pulldown+prise+large+technique","Prise large, tirer vers la poitrine en sortant le torse. Plus de travail sur le grand dorsal que la prise neutre = meilleur V-shape."),
         ],
         core: {rounds:2, exercises:["Farmer Walk KB — 40m (2×14 kg)","Gainage latéral — 35s/côté"]},
@@ -647,7 +648,7 @@ const MESOS = [
           makeExo("m3c1","Fentes marchées haltères","Quadriceps · Fessiers",4,10,"2-0-1-0",75,null,2.5,"fessiers","fentes+marchees+halteres+technique+femme","",true),
           makeExo("m3c2","Kickback machine","Fessiers",4,12,"2-0-1-2",60,null,5,"fessiers","kickback+machine+fessiers+technique","S9 : 4 séries. S10 : 2 séries.",true),
           makeExo("m3c3","Sumo Squat haltère lourd","Adducteurs · Fessiers",3,12,"3-1-1-0",75,null,4,"fessiers","sumo+squat+haltere+lourd+technique",""),
-          makeExo("m3c4","Shoulder Press machine Panatta","Deltoïdes",3,12,"2-0-1-1",75,null,5,"epaules","shoulder+press+machine+technique+debutant",""),
+          makeExo("m3c4","Développé militaire haltères assis","Deltoïdes",3,12,"2-0-1-1",75,null,2.5,"epaules","developpe+militaire+halteres+assis+technique+femme",""),
           makeExo("m3c5","Lat Pulldown prise large","Grand dorsal",3,12,"2-1-1-1",75,null,5,"dos","lat+pulldown+prise+large+technique",""),
         ],
         core: {rounds:2, exercises:["Farmer Walk KB — 40m (2×16 kg)","Gainage latéral — 40s/côté"]},
@@ -671,7 +672,7 @@ function defaultState() {
   return {
     currentMeso: 1,
     currentWeek: 1,
-    unlockedMesos: [1],
+    unlockedMesos: [1, 2, 3],
     history: [],
     exerciseData: {},
     finisherData: {},
@@ -682,7 +683,13 @@ function defaultState() {
 function loadState() {
   try {
     const s = localStorage.getItem('manon_fit_state');
-    return s ? {...defaultState(), ...JSON.parse(s)} : defaultState();
+    const parsed = s ? JSON.parse(s) : {};
+    const merged = {...defaultState(), ...parsed};
+    // Migration: unlock all mesos for existing users
+    [1,2,3].forEach(id => {
+      if (!merged.unlockedMesos.includes(id)) merged.unlockedMesos.push(id);
+    });
+    return merged;
   } catch(e) { return defaultState(); }
 }
 
@@ -699,16 +706,17 @@ function getLastExoData(mesoId, sessionKey, exoId, currentWeek) {
     const key = getExoKey(mesoId, sessionKey, exoId, w);
     if (state.exerciseData[key]) return state.exerciseData[key];
   }
-  // Check previous meso same exercise pattern
+  // Check previous meso same exercise pattern (name match)
   if (mesoId > 1) {
+    const currentExo = getExerciseAny(mesoId, sessionKey, exoId, currentWeek);
+    if (!currentExo) return null;
     for (let m = mesoId - 1; m >= 1; m--) {
       const meso = MESOS[m-1];
       for (let w = meso.weeks[meso.weeks.length-1]; w >= meso.weeks[0]; w--) {
-        // Try to find same exercise in previous meso
         for (const sk of ['A','B','C']) {
-          const sess = meso.sessions[sk];
-          for (const ex of sess.exercises) {
-            if (ex.name === getExoByIds(mesoId, sessionKey, exoId)?.name) {
+          const effExercises = getEffectiveExercises(meso, sk, w);
+          for (const ex of effExercises) {
+            if (ex.name === currentExo.name) {
               const key = getExoKey(m, sk, ex.id, w);
               if (state.exerciseData[key]) return state.exerciseData[key];
             }
@@ -718,6 +726,13 @@ function getLastExoData(mesoId, sessionKey, exoId, currentWeek) {
     }
   }
   return null;
+}
+
+function getExerciseAny(mesoId, sessionKey, exoId, week) {
+  const meso = MESOS[mesoId-1];
+  if (!meso) return null;
+  const exercises = getEffectiveExercises(meso, sessionKey, week || meso.weeks[0]);
+  return exercises.find(e => e.id === exoId);
 }
 
 function getExoByIds(mesoId, sessionKey, exoId) {
@@ -737,6 +752,18 @@ function getFinisherKey(weekRange, sessionKey) {
   const midpoint = meso.weeks[0] + Math.floor(meso.weeks.length / 2);
   if (w < midpoint) return `${meso.weeks[0]}-${midpoint-1}`;
   return `${midpoint}-${meso.weeks[meso.weeks.length-1]}`;
+}
+
+// Returns the exercises for a given meso/session/week, applying any week-conditional overrides
+function getEffectiveExercises(meso, sessionKey, week) {
+  const base = meso.sessions[sessionKey].exercises;
+  // Méso 1 Session C: swap Panatta shoulder press (C4) for dumbbell from week 2 onwards
+  if (meso.id === 1 && sessionKey === 'C' && week >= 2) {
+    const result = [...base];
+    result[3] = makeExo("m1c4_db","Développé militaire haltères assis","Deltoïdes",3,12,"2-0-1-1",75,4,2.5,"epaules","developpe+militaire+halteres+assis+technique+femme","Assise sur banc à dossier 90°, haltères au niveau des épaules paumes vers l'avant. Pousser vers le haut (1s) sans cogner en haut, maintenir 1s, redescendre lentement (2s). Garder le core gainé, ne pas cambrer le dos.");
+    return result;
+  }
+  return base;
 }
 
 // ═══════════════════════════════════════
@@ -859,11 +886,13 @@ function selectMeso(id) {
   renderHome();
 }
 
-function advanceWeek() {
+function changeWeek(delta) {
   const meso = MESOS[state.currentMeso - 1];
+  const minWeek = meso.weeks[0];
   const maxWeek = meso.weeks[meso.weeks.length - 1];
-  if (state.currentWeek < maxWeek) {
-    state.currentWeek++;
+  const newWeek = state.currentWeek + delta;
+  if (newWeek >= minWeek && newWeek <= maxWeek) {
+    state.currentWeek = newWeek;
     saveState();
     renderHome();
   }
@@ -876,6 +905,7 @@ function advanceWeek() {
 function startWorkout(sessionKey) {
   const meso = MESOS[state.currentMeso - 1];
   const session = meso.sessions[sessionKey];
+  const exercises = getEffectiveExercises(meso, sessionKey, state.currentWeek);
   const weekIdx = state.currentWeek - meso.weeks[0];
   const rir = meso.rir[Math.min(weekIdx, meso.rir.length-1)];
   const isDeload = state.currentMeso === 3 && state.currentWeek === 10;
@@ -886,7 +916,7 @@ function startWorkout(sessionKey) {
   };
 
   // Init sets
-  session.exercises.forEach(exo => {
+  exercises.forEach(exo => {
     const numSets = isDeload ? 2 : exo.sets;
     const lastData = getLastExoData(state.currentMeso, sessionKey, exo.id, state.currentWeek);
     const suggestedWeight = lastData ? lastData.weight + exo.increment : exo.startWeight;
@@ -925,7 +955,7 @@ function startWorkout(sessionKey) {
 
   // Exercises
   html += `<div class="section-header">💪 Exercices</div>`;
-  session.exercises.forEach(exo => {
+  exercises.forEach(exo => {
     const numSets = isDeload ? 2 : exo.sets;
     const lastData = getLastExoData(state.currentMeso, sessionKey, exo.id, state.currentWeek);
     const suggestedWeight = lastData ? lastData.weight + exo.increment : exo.startWeight;
@@ -1061,10 +1091,10 @@ function toggleSet(exoId, setIdx, restSeconds) {
 function updateScore() {
   if (!state.activeWorkout) return;
   const meso = MESOS[state.activeWorkout.mesoId - 1];
-  const session = meso.sessions[state.activeWorkout.sessionKey];
+  const exercises = getEffectiveExercises(meso, state.activeWorkout.sessionKey, state.activeWorkout.week);
   let totalSets = 0, doneSets = 0, totalTargetReps = 0, doneReps = 0;
 
-  session.exercises.forEach(exo => {
+  exercises.forEach(exo => {
     const sets = state.activeWorkout.sets[exo.id] || [];
     sets.forEach(s => {
       totalSets++;
@@ -1093,8 +1123,9 @@ function finishWorkout() {
   // Determine max weight used per exercise for charge tracking
   const meso = MESOS[state.activeWorkout.mesoId - 1];
   const session = meso.sessions[state.activeWorkout.sessionKey];
+  const exercises = getEffectiveExercises(meso, state.activeWorkout.sessionKey, state.activeWorkout.week);
 
-  session.exercises.forEach(exo => {
+  exercises.forEach(exo => {
     const sets = state.activeWorkout.sets[exo.id] || [];
     const doneSets = sets.filter(s => s.done);
     if (doneSets.length > 0) {
@@ -1142,8 +1173,8 @@ function confirmLeaveWorkout() {
 
 function showExoDetail(exoId, sessionKey) {
   const meso = MESOS[state.currentMeso - 1];
-  const session = meso.sessions[sessionKey];
-  const exo = session.exercises.find(e => e.id === exoId);
+  const exercises = getEffectiveExercises(meso, sessionKey, state.currentWeek);
+  const exo = exercises.find(e => e.id === exoId);
   if (!exo) return;
 
   const modal = document.getElementById('modal');
@@ -1187,7 +1218,7 @@ function renderHistory() {
     return;
   }
 
-  list.innerHTML = [...state.history].reverse().map(h => {
+  list.innerHTML = state.history.map((h, idx) => ({h, idx})).reverse().map(({h, idx}) => {
     const d = new Date(h.date);
     const dateStr = d.toLocaleDateString('fr-FR', {weekday:'short', day:'numeric', month:'short'});
     return `<div class="history-item">
@@ -1199,9 +1230,115 @@ function renderHistory() {
           ${h.finisherResult ? ' · Finisher: ' + h.finisherResult : ''}
         </div>
       </div>
-      <div class="score-badge">${h.score}</div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+        <div class="score-badge">${h.score}</div>
+        <button class="exo-action-btn" onclick="showExport(${idx})" style="font-size:10px;padding:4px 8px;">📤 Export</button>
+      </div>
     </div>`;
   }).join('');
+}
+
+// Generate session report text for Claude analysis
+function generateReport(historyIdx) {
+  const h = state.history[historyIdx];
+  if (!h) return '';
+  const meso = MESOS[h.mesoId - 1];
+  const weekIdx = h.week - meso.weeks[0];
+  const rir = meso.rir[Math.min(weekIdx, meso.rir.length-1)];
+  const exercises = getEffectiveExercises(meso, h.sessionKey, h.week);
+  const session = meso.sessions[h.sessionKey];
+
+  const d = new Date(h.date);
+  const dateStr = d.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+
+  const sep = '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━';
+  let r = `${sep}\n📊 RAPPORT DE SÉANCE\n${sep}\n\n`;
+  r += `📅 ${dateStr}\n`;
+  r += `📍 S${h.week}/10 · 🌸 Méso ${h.mesoId} — ${h.mesoName}\n`;
+  r += `⚙️ RIR ${rir}\n`;
+  r += `🏆 Score : ${h.score}/10\n\n`;
+  r += `── EXERCICES ──\n\n`;
+
+  let totalSets = 0, doneSets = 0, totalReps = 0, actualReps = 0;
+
+  exercises.forEach(exo => {
+    const sets = h.sets[exo.id] || [];
+    if (sets.length === 0) return;
+    r += `▸ ${exo.name} (${exo.muscles}) T:${exo.tempo}\n`;
+    sets.forEach((s, i) => {
+      totalSets++;
+      totalReps += exo.reps;
+      if (s.done) {
+        doneSets++;
+        actualReps += (s.reps || 0);
+        const reps = s.reps !== null ? `${s.reps}r` : '—r';
+        const w = s.weight !== null && s.weight !== '' ? `${s.weight}kg` : '0kg';
+        r += `  S${i+1}: ${reps} × ${w} ✅\n`;
+      } else {
+        r += `  S${i+1}: ⬜\n`;
+      }
+    });
+    r += `\n`;
+  });
+
+  // Finisher
+  if (h.finisherResult) {
+    let finKey;
+    if (meso.id === 3) {
+      finKey = h.week === meso.weeks[0] ? "1" : "2";
+    } else {
+      const midpoint = meso.weeks[0] + Math.floor(meso.weeks.length / 2);
+      finKey = h.week < midpoint ? `${meso.weeks[0]}-${midpoint-1}` : `${midpoint}-${meso.weeks[meso.weeks.length-1]}`;
+    }
+    const finisher = session.finishers[finKey];
+    r += `── FINISHER ──\n`;
+    if (finisher) r += `${finisher.name} (${finisher.format})\n`;
+    r += `Résultat : ${h.finisherResult}\n\n`;
+  }
+
+  const setPct = totalSets > 0 ? Math.round(doneSets/totalSets*100) : 0;
+  const repPct = totalReps > 0 ? Math.round(actualReps/totalReps*100) : 0;
+  r += `── STATS ──\n`;
+  r += `📈 Séries: ${doneSets}/${totalSets} (${setPct}%) · Reps: ${repPct}%\n`;
+  if (h.duration) r += `⏱ Durée: ${h.duration} min\n`;
+  r += `\n${sep}\n💬 Colle dans Claude : "Analyse ma séance"\n${sep}`;
+
+  return r;
+}
+
+function showExport(historyIdx) {
+  const report = generateReport(historyIdx);
+  const modal = document.getElementById('modal');
+  const content = document.getElementById('modalContent');
+  content.innerHTML = `
+    <button class="modal-close" onclick="document.getElementById('modal').classList.remove('active')">✕</button>
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:22px;margin-bottom:8px;padding-right:40px;">📤 Export séance</h2>
+    <div style="font-size:12px;color:var(--text-light);margin-bottom:12px;">Copie ce texte et colle-le dans Claude pour une analyse détaillée</div>
+    <textarea id="exportText" readonly style="width:100%;height:280px;border:1.5px solid var(--rose-light);border-radius:10px;padding:12px;font-family:monospace;font-size:11px;background:var(--cream);color:var(--charcoal);resize:none;">${report}</textarea>
+    <button class="finish-workout-btn" onclick="copyExport()" style="margin-top:12px;">📋 Copier le rapport</button>
+  `;
+  modal.classList.add('active');
+}
+
+function copyExport() {
+  const textarea = document.getElementById('exportText');
+  textarea.select();
+  textarea.setSelectionRange(0, 99999);
+  const fallback = () => {
+    try {
+      document.execCommand('copy');
+      alert('✅ Rapport copié !');
+    } catch(e) {
+      alert('Sélectionne et copie manuellement (Ctrl+C / Cmd+C)');
+    }
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(textarea.value).then(() => {
+      alert('✅ Rapport copié !');
+    }).catch(fallback);
+  } else {
+    fallback();
+  }
 }
 
 // ═══════════════════════════════════════
