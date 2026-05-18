@@ -96,21 +96,36 @@ h1,h2,h3 { font-family: 'Cormorant Garamond', serif; }
   margin-bottom: 8px;
 }
 
-/* SESSION SELECTOR */
-.meso-selector {
-  display: flex; gap: 8px; margin-bottom: 16px;
+/* WEEK TABS */
+.meso-group { margin-bottom: 14px; }
+.meso-group-label {
+  font-size: 11px; font-weight: 700; color: var(--rose-dark);
+  text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
 }
-.meso-btn {
-  flex:1; padding: 10px 8px; border-radius: 12px;
+.week-tab-row { display: flex; gap: 6px; }
+.week-tab {
+  flex: 1; padding: 12px 4px; border-radius: 12px;
   border: 2px solid var(--rose-light); background: var(--white);
-  font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 12px;
+  font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 13px;
   color: var(--text-light); cursor: pointer; transition: all 0.2s;
-  text-align: center;
+  position: relative;
 }
-.meso-btn.active { border-color: var(--rose); background: var(--blush); color: var(--rose-dark); }
-.meso-btn.locked { opacity: 0.4; cursor: not-allowed; }
-.meso-btn.locked::after { content: ' 🔒'; }
+.week-tab.active { border-color: var(--rose); background: var(--blush); color: var(--rose-dark); }
+.week-tab.complete { border-color: var(--success); }
+.week-tab.complete.active { background: var(--success-light); }
+.week-tab .wcheck {
+  display: block; font-size: 11px; color: var(--success); margin-top: 1px;
+}
 
+.week-banner {
+  background: linear-gradient(135deg, var(--rose-dark), var(--rose));
+  color: var(--white); border-radius: var(--card-radius);
+  padding: 12px 16px; margin-bottom: 16px; text-align: center;
+  font-weight: 600; font-size: 13px;
+  box-shadow: 0 4px 16px rgba(200,120,145,0.2);
+}
+
+/* SESSION SELECTOR */
 .session-grid {
   display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px;
 }
@@ -118,15 +133,31 @@ h1,h2,h3 { font-family: 'Cormorant Garamond', serif; }
   background: var(--white); border-radius: var(--card-radius);
   padding: 16px 12px; text-align: center; cursor: pointer;
   border: 2px solid var(--rose-light); transition: all 0.25s;
-  box-shadow: var(--card-shadow);
+  box-shadow: var(--card-shadow); position: relative;
 }
 .session-card:active { transform: scale(0.97); }
+.session-card.done { border-color: var(--success); background: var(--success-light); }
 .session-card .letter {
   font-family: 'Cormorant Garamond', serif;
   font-size: 32px; font-weight: 700; color: var(--rose-dark);
 }
 .session-card .label { font-size: 11px; color: var(--text-light); margin-top: 4px; font-weight: 600; }
-.session-card .last-done { font-size: 10px; color: var(--gold); margin-top: 6px; }
+.session-card .session-status { font-size: 10px; margin-top: 6px; font-weight: 700; color: var(--text-light); }
+.session-card.done .session-status { color: var(--success); }
+.session-check {
+  position: absolute; top: 6px; right: 6px;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--success); color: var(--white);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700;
+}
+.big-check {
+  width: 76px; height: 76px; border-radius: 50%;
+  background: var(--success); color: var(--white);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 42px; font-weight: 700; margin: 0 auto 12px;
+  box-shadow: 0 4px 24px rgba(123,196,160,0.4);
+}
 
 /* WORKOUT VIEW */
 .workout-header {
@@ -384,28 +415,13 @@ h1,h2,h3 { font-family: 'Cormorant Garamond', serif; }
   </div>
   <div class="motivation-card" id="homeMotivation"></div>
 
-  <div class="card-title" style="margin-bottom:10px;">Mésocycle</div>
-  <div class="meso-selector" id="mesoSelector"></div>
+  <div class="card-title" style="margin-bottom:10px;">Semaines</div>
+  <div id="weekTabs"></div>
 
-  <div class="card-title" style="margin-bottom:10px;">Séance du jour</div>
+  <div class="week-banner" id="weekBanner"></div>
+
+  <div class="card-title" style="margin-bottom:10px;">Séances de la semaine</div>
   <div class="session-grid" id="sessionGrid"></div>
-
-  <div class="card" id="weekInfo" style="margin-top:8px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
-      <div>
-        <div style="font-size:12px;color:var(--text-light);">Semaine en cours</div>
-        <div style="font-weight:700;font-size:18px;" id="currentWeekDisplay">S1</div>
-      </div>
-      <div>
-        <div style="font-size:12px;color:var(--text-light);">RIR cible</div>
-        <div style="font-weight:700;font-size:18px;color:var(--rose-dark);" id="currentRIR">3-4</div>
-      </div>
-      <div style="display:flex;gap:6px;">
-        <button class="exo-action-btn" onclick="changeWeek(-1)" style="font-size:13px;padding:6px 10px;">◀</button>
-        <button class="exo-action-btn" onclick="changeWeek(1)" style="font-size:13px;padding:6px 10px;">▶</button>
-      </div>
-    </div>
-  </div>
 </div>
 
 <!-- WORKOUT SCREEN -->
@@ -426,8 +442,8 @@ h1,h2,h3 { font-family: 'Cormorant Garamond', serif; }
     <h1>Réglages</h1>
   </div>
   <div class="card">
-    <div class="card-title">Mésocycles</div>
-    <div id="mesoSettings"></div>
+    <div class="card-title">Progression</div>
+    <div id="progressInfo"></div>
   </div>
   <button class="reset-btn" onclick="resetAll()">🗑 Réinitialiser toutes les données</button>
 </div>
@@ -486,7 +502,7 @@ const CHARGE_MESSAGES = [
 ];
 
 const WARMUP = [
-  {name:"Assault Bike ou Rameur léger", duration:"3 min", yt:"assault+bike+echauffement"},
+  {name:"Assault Bike, Rameur ou Machine escalier léger", duration:"3 min", yt:"echauffement+cardio+salle"},
   {name:"Banded Monster Walk", duration:"15 pas/côté", yt:"banded+monster+walk+technique"},
   {name:"Banded Glute Bridge", duration:"15 reps", yt:"banded+glute+bridge+activation"},
   {name:"Cat-Cow", duration:"8 reps", yt:"cat+cow+stretch+mobilite"},
@@ -514,8 +530,10 @@ const MESOS = [
         core: {rounds:2, exercises:["Dead Bug × 10/côté","Planche avant-bras — 30s"]},
         coreYt: ["dead+bug+exercice+technique","planche+avant+bras+gainage+technique"],
         finishers: {
-          "1-2": {name:"La Navette", format:"AMRAP 8 min", detail:"• Broad Jump × 5\n• Ball Slam × 8 (6 kg)\n• Assault Bike 12 cal", yt:"broad+jump+technique+debutant"},
-          "3-4": {name:"Le Circuit Plaisir", format:"3 tours · 45s repos entre tours", detail:"• Assault Bike 10 cal\n• Squat Jump × 8\n• Battle Ropes × 20s\n• Bear Crawl 10m aller-retour", yt:"bear+crawl+technique+exercice"},
+          1: {name:"La Navette", format:"AMRAP 8 min", detail:"• Broad Jump × 5\n• Ball Slam × 8 (6 kg)\n• Assault Bike 12 cal", yt:"broad+jump+technique+debutant"},
+          2: {name:"L'Escalier Express", format:"EMOM 8 min", detail:"• Min impaire : Machine escalier 30s rythme soutenu\n• Min paire : KB Swing × 12 (14 kg)", yt:"machine+escalier+stairmaster+technique"},
+          3: {name:"Le Circuit Plaisir", format:"3 tours · 45s repos entre tours", detail:"• Assault Bike 10 cal\n• Squat Jump × 8\n• Battle Ropes × 20s\n• Bear Crawl 10m aller-retour", yt:"bear+crawl+technique+exercice"},
+          4: {name:"Vagues", format:"For time · Cap 10 min", detail:"• Rameur 200m\n• Ball Slam × 10 (6 kg)\n• Rameur 150m\n• Ball Slam × 8\n• Rameur 100m\n• Ball Slam × 6", yt:"rameur+technique+debutant"},
         }
       },
       B: {
@@ -530,8 +548,10 @@ const MESOS = [
         core: {rounds:2, exercises:["Pallof Press câble — 8/côté (hold 3s)","Bird Dog — 10/côté"]},
         coreYt: ["pallof+press+cable+technique+core","bird+dog+exercice+technique"],
         finishers: {
-          "1-2": {name:"Le Duo Infernal", format:"Toutes les 90s × 6 rounds", detail:"• Sled Push 20m (20 kg)\n• KB Swing × 10 (14 kg)\n→ Le repos c'est ce qui reste dans les 90s", yt:"sled+push+technique+debutant"},
-          "3-4": {name:"Sprint & Slam", format:"EMOM 8 min", detail:"• Min impaire : Rameur sprint 150m\n• Min paire : Ball Slam × 10 (6-8 kg)", yt:"ball+slam+technique+exercice"},
+          1: {name:"Le Duo Infernal", format:"Toutes les 90s × 6 rounds", detail:"• Sled Push 20m (20 kg)\n• KB Swing × 10 (14 kg)\n→ Le repos c'est ce qui reste dans les 90s", yt:"sled+push+technique+debutant"},
+          2: {name:"Tabata Bascule", format:"8 rounds · 20s effort / 10s repos", detail:"• Rounds 1, 3, 5, 7 : Squat Jump\n• Rounds 2, 4, 6, 8 : Ball Slam (6 kg)", yt:"squat+jump+technique+exercice"},
+          3: {name:"Sprint & Slam", format:"EMOM 8 min", detail:"• Min impaire : Rameur sprint 150m\n• Min paire : Ball Slam × 10 (6-8 kg)", yt:"ball+slam+technique+exercice"},
+          4: {name:"Marches & Cordes", format:"4 rounds · 60s repos", detail:"• Machine escalier 45s rythme soutenu\n• Battle Ropes 25s", yt:"machine+escalier+stairmaster+technique"},
         }
       },
       C: {
@@ -546,8 +566,10 @@ const MESOS = [
         core: {rounds:2, exercises:["Farmer Walk KB — 30m (2×12 kg)","Gainage latéral — 25s/côté"]},
         coreYt: ["farmer+walk+kettlebell+technique","gainage+lateral+technique"],
         finishers: {
-          "1-2": {name:"La Cascade", format:"Échelle descendante · For time", detail:"• Wall Ball 10-8-6-4-2 (4 kg)\n• Box Step-Up 10-8-6-4-2 (40 cm, PDC)\n→ Alterner Wall Ball puis Step-Up à chaque palier", yt:"wall+ball+technique+debutant"},
-          "3-4": {name:"Le Fermier Pressé", format:"For time · Cap 10 min", detail:"• Farmer Walk KB 40m (2×14 kg)\n• Ski Erg 20 cal\n• Farmer Walk KB 30m\n• Ski Erg 15 cal\n• Farmer Walk KB 20m\n• Ski Erg 10 cal", yt:"ski+erg+technique+debutant"},
+          1: {name:"La Cascade", format:"Échelle descendante · For time", detail:"• Wall Ball 10-8-6-4-2 (4 kg)\n• Box Step-Up 10-8-6-4-2 (40 cm, PDC)\n→ Alterner Wall Ball puis Step-Up à chaque palier", yt:"wall+ball+technique+debutant"},
+          2: {name:"Le Trio", format:"AMRAP 8 min", detail:"• Broad Jump × 6\n• Wall Ball × 10 (4 kg)\n• Assault Bike 10 cal", yt:"wall+ball+technique+debutant"},
+          3: {name:"Le Fermier Pressé", format:"For time · Cap 10 min", detail:"• Farmer Walk KB 40m (2×14 kg)\n• Ski Erg 20 cal\n• Farmer Walk KB 30m\n• Ski Erg 15 cal\n• Farmer Walk KB 20m\n• Ski Erg 10 cal", yt:"ski+erg+technique+debutant"},
+          4: {name:"Le Sommet", format:"For time · Cap 10 min", detail:"• Machine escalier 60s\n• KB Swing × 15 (14 kg)\n• Machine escalier 45s\n• KB Swing × 12\n• Machine escalier 30s\n• KB Swing × 10", yt:"machine+escalier+stairmaster+technique"},
         }
       }
     }
@@ -568,8 +590,10 @@ const MESOS = [
         core: {rounds:2, exercises:["Dead Bug lesté (1-2 kg) × 10/côté","Planche avant-bras — 40s"]},
         coreYt: ["dead+bug+leste+technique","planche+avant+bras+gainage+technique"],
         finishers: {
-          "1-2": {name:"Le Chipper", format:"For time · Cap 10 min", detail:"• Rameur 250m\n• Ball Slam × 15 (8 kg)\n• Box Step-Up × 20 (alternés)\n• KB Swing × 15 (16 kg)\n• Broad Jump × 10\n• Assault Bike 15 cal", yt:"chipper+crossfit+workout"},
-          "3-4": {name:"Le Triathlon Mini", format:"For time · Cap 10 min", detail:"• Assault Bike 15 cal\n• Bear Crawl 20m\n• Wall Ball × 12 (6 kg)\n• Ski Erg 15 cal\n• Broad Jump 20m\n• KB Swing × 15 (16 kg)\n• Rameur 200m", yt:"bear+crawl+technique+exercice"},
+          5: {name:"Le Chipper", format:"For time · Cap 10 min", detail:"• Rameur 250m\n• Ball Slam × 15 (8 kg)\n• Box Step-Up × 20 (alternés)\n• KB Swing × 15 (16 kg)\n• Broad Jump × 10\n• Assault Bike 15 cal", yt:"chipper+crossfit+workout"},
+          6: {name:"EMOM Puissance", format:"EMOM 10 min (2 tours)", detail:"• Min 1 : Machine escalier 40s\n• Min 2 : Ball Slam × 10 (8 kg)\n• Min 3 : Broad Jump × 6\n• Min 4 : KB Swing × 12 (16 kg)\n• Min 5 : Wall Ball × 10 (6 kg)", yt:"machine+escalier+stairmaster+technique"},
+          7: {name:"Le Triathlon Mini", format:"For time · Cap 10 min", detail:"• Assault Bike 15 cal\n• Bear Crawl 20m\n• Wall Ball × 12 (6 kg)\n• Ski Erg 15 cal\n• Broad Jump 20m\n• KB Swing × 15 (16 kg)\n• Rameur 200m", yt:"bear+crawl+technique+exercice"},
+          8: {name:"L'Ascension", format:"4 rounds · 60s repos", detail:"• Machine escalier 60s rythme rapide\n• Ball Slam × 12 (8 kg)\n• Broad Jump × 8", yt:"machine+escalier+stairmaster+technique"},
         }
       },
       B: {
@@ -584,8 +608,10 @@ const MESOS = [
         core: {rounds:2, exercises:["Pallof Press câble — 10/côté (hold 3s)","Ab Wheel depuis les genoux × 8"]},
         coreYt: ["pallof+press+cable+technique+core","ab+wheel+genoux+technique+debutant"],
         finishers: {
-          "1-2": {name:"Sled & Ropes", format:"4 rounds · 60s repos", detail:"• Sled Push 20m (25-30 kg)\n• Battle Ropes 20s\n• Sled Pull corde 20m (même charge)", yt:"sled+push+pull+technique"},
-          "3-4": {name:"EMOM Fun", format:"EMOM 10 min (2 tours)", detail:"• Min 1 : Sled Push 20m (30 kg)\n• Min 2 : Ball Slam × 10 (8 kg)\n• Min 3 : Broad Jump × 6\n• Min 4 : KB Swing × 12 (16 kg)\n• Min 5 : Box Step-Up × 8/côté", yt:"emom+workout+crossfit"},
+          5: {name:"Sled & Ropes", format:"4 rounds · 60s repos", detail:"• Sled Push 20m (25-30 kg)\n• Battle Ropes 20s\n• Sled Pull corde 20m (même charge)", yt:"sled+push+pull+technique"},
+          6: {name:"Tabata Duo", format:"8 rounds · 20s effort / 10s repos", detail:"• Rounds 1, 3, 5, 7 : Squat Jump\n• Rounds 2, 4, 6, 8 : Ball Slam (8 kg)", yt:"squat+jump+technique+exercice"},
+          7: {name:"EMOM Fun", format:"EMOM 10 min (2 tours)", detail:"• Min 1 : Sled Push 20m (30 kg)\n• Min 2 : Ball Slam × 10 (8 kg)\n• Min 3 : Broad Jump × 6\n• Min 4 : KB Swing × 12 (16 kg)\n• Min 5 : Box Step-Up × 8/côté", yt:"emom+workout+crossfit"},
+          8: {name:"Le Grimpeur", format:"For time · Cap 10 min", detail:"• Machine escalier 90s\n• KB Swing × 20 (16 kg)\n• Machine escalier 60s\n• KB Swing × 15\n• Machine escalier 30s\n• KB Swing × 10", yt:"machine+escalier+stairmaster+technique"},
         }
       },
       C: {
@@ -600,8 +626,10 @@ const MESOS = [
         core: {rounds:2, exercises:["Farmer Walk KB — 40m (2×14 kg)","Gainage latéral — 35s/côté"]},
         coreYt: ["farmer+walk+kettlebell+technique","gainage+lateral+technique"],
         finishers: {
-          "1-2": {name:"Tabata Mixte", format:"8 rounds · 20s effort / 10s repos", detail:"• Rounds 1, 3, 5, 7 : Squat Jump\n• Rounds 2, 4, 6, 8 : Ball Slam (6-8 kg)", yt:"squat+jump+technique+exercice"},
-          "3-4": {name:"L'Échelle qui Monte", format:"For time · Cap 10 min", detail:"Échelle ascendante — 3 tours :\n• Assault Bike 5/10/15 cal\n• Broad Jump 2/4/6\n• Battle Ropes 10s/15s/20s\n• Squat Jump 4/6/8\n→ Chaque tour la dose augmente", yt:"battle+ropes+technique+debutant"},
+          5: {name:"Tabata Mixte", format:"8 rounds · 20s effort / 10s repos", detail:"• Rounds 1, 3, 5, 7 : Squat Jump\n• Rounds 2, 4, 6, 8 : Ball Slam (6-8 kg)", yt:"squat+jump+technique+exercice"},
+          6: {name:"Le Chipper Court", format:"For time · Cap 8 min", detail:"• Rameur 200m\n• Wall Ball × 12 (6 kg)\n• Box Step-Up × 16 (alternés)\n• Assault Bike 12 cal", yt:"chipper+crossfit+workout"},
+          7: {name:"L'Échelle qui Monte", format:"For time · Cap 10 min", detail:"Échelle ascendante — 3 tours :\n• Assault Bike 5/10/15 cal\n• Broad Jump 2/4/6\n• Battle Ropes 10s/15s/20s\n• Squat Jump 4/6/8\n→ Chaque tour la dose augmente", yt:"battle+ropes+technique+debutant"},
+          8: {name:"Toit du Monde", format:"5 rounds · 45s repos", detail:"• Machine escalier 45s\n• Wall Ball × 10 (6 kg)\n• Battle Ropes 15s", yt:"machine+escalier+stairmaster+technique"},
         }
       }
     }
@@ -622,8 +650,8 @@ const MESOS = [
         core: {rounds:2, exercises:["Dead Bug lesté × 10/côté","Planche avant-bras — 45s"]},
         coreYt: ["dead+bug+leste+technique","planche+avant+bras+gainage+technique"],
         finishers: {
-          "1": {name:"Tout Dedans", format:"AMRAP 6 min", detail:"• Ball Slam × 5 (8 kg)\n• Broad Jump × 5\n• Assault Bike 10 cal", yt:"amrap+workout+crossfit"},
-          "2": {name:"Récupération", format:"10 min", detail:"Marche inclinée tapis (5-8%, 5.5-6 km/h)\nou vélo léger\n\n→ Pas de finisher intense, juste du flux 🌸", yt:""},
+          9: {name:"Tout Dedans", format:"AMRAP 6 min", detail:"• Ball Slam × 5 (8 kg)\n• Broad Jump × 5\n• Assault Bike 10 cal", yt:"amrap+workout+crossfit"},
+          10: {name:"Récupération", format:"10 min", detail:"Machine escalier rythme doux, marche inclinée tapis (5-8%, 5.5-6 km/h) ou vélo léger\n\n→ Pas de finisher intense, juste du flux 🌸", yt:""},
         }
       },
       B: {
@@ -638,8 +666,8 @@ const MESOS = [
         core: {rounds:2, exercises:["Pallof Press câble — 10/côté (hold 3s)","Ab Wheel genoux × 10"]},
         coreYt: ["pallof+press+cable+technique+core","ab+wheel+genoux+technique+debutant"],
         finishers: {
-          "1": {name:"Le Benchmark", format:"For time", detail:"• Rameur 500m\n• KB Swing × 20 (16 kg)\n• Sled Push 40m (30 kg)\n• Wall Ball × 15 (6 kg)\n\n⏱ Note ton chrono !", yt:"rameur+500m+technique"},
-          "2": {name:"Récupération", format:"10 min", detail:"Marche inclinée tapis (5-8%, 5.5-6 km/h)\nou vélo léger\n\n→ Récupération active 🌸", yt:""},
+          9: {name:"Le Benchmark", format:"For time", detail:"• Rameur 500m\n• KB Swing × 20 (16 kg)\n• Sled Push 40m (30 kg)\n• Wall Ball × 15 (6 kg)\n\n⏱ Note ton chrono !", yt:"rameur+500m+technique"},
+          10: {name:"Récupération", format:"10 min", detail:"Machine escalier rythme doux, marche inclinée tapis ou vélo léger\n\n→ Récupération active 🌸", yt:""},
         }
       },
       C: {
@@ -654,8 +682,8 @@ const MESOS = [
         core: {rounds:2, exercises:["Farmer Walk KB — 40m (2×16 kg)","Gainage latéral — 40s/côté"]},
         coreYt: ["farmer+walk+kettlebell+technique","gainage+lateral+technique"],
         finishers: {
-          "1": {name:"Le Dernier Tour", format:"3 rounds for time", detail:"• Ski Erg 15 cal\n• Box Step-Up × 10/côté\n• Bear Crawl 15m\n• Battle Ropes 15s", yt:"ski+erg+technique+debutant"},
-          "2": {name:"Récupération", format:"10 min", detail:"Marche inclinée tapis ou vélo léger\n\n→ Bravo, programme terminé ! 🎉🌸", yt:""},
+          9: {name:"Le Dernier Tour", format:"3 rounds for time", detail:"• Ski Erg 15 cal\n• Box Step-Up × 10/côté\n• Bear Crawl 15m\n• Battle Ropes 15s", yt:"ski+erg+technique+debutant"},
+          10: {name:"Récupération", format:"10 min", detail:"Machine escalier rythme doux, marche inclinée tapis ou vélo léger\n\n→ Bravo, programme terminé ! 🎉🌸", yt:""},
         }
       }
     }
@@ -743,15 +771,23 @@ function getExoByIds(mesoId, sessionKey, exoId) {
   return sess.exercises.find(e => e.id === exoId);
 }
 
-function getFinisherKey(weekRange, sessionKey) {
-  const w = state.currentWeek;
-  const meso = MESOS[state.currentMeso - 1];
-  if (meso.id === 3) {
-    return w === meso.weeks[0] ? "1" : "2";
-  }
-  const midpoint = meso.weeks[0] + Math.floor(meso.weeks.length / 2);
-  if (w < midpoint) return `${meso.weeks[0]}-${midpoint-1}`;
-  return `${midpoint}-${meso.weeks[meso.weeks.length-1]}`;
+function getFinisherKey() {
+  return state.currentWeek;
+}
+
+// Returns the meso object that contains a given week
+function getMesoForWeek(week) {
+  return MESOS.find(m => m.weeks.includes(week)) || MESOS[0];
+}
+
+// True if a session of a given week has been completed at least once
+function isSessionDone(week, sessionKey) {
+  return state.history.some(h => h.week === week && h.sessionKey === sessionKey);
+}
+
+// True if all 3 sessions A/B/C of a week are completed
+function isWeekComplete(week) {
+  return ['A','B','C'].every(s => isSessionDone(week, s));
 }
 
 // Returns the exercises for a given meso/session/week, applying any week-conditional overrides
@@ -843,59 +879,54 @@ function renderHome() {
   const q = MOTIVATION_QUOTES[Math.floor(Math.random() * MOTIVATION_QUOTES.length)];
   document.getElementById('homeMotivation').textContent = q;
 
-  // Meso selector
-  const mesoSel = document.getElementById('mesoSelector');
-  mesoSel.innerHTML = MESOS.map(m => {
-    const isActive = state.currentMeso === m.id;
-    const isLocked = !state.unlockedMesos.includes(m.id);
-    return `<button class="meso-btn ${isActive?'active':''} ${isLocked?'locked':''}"
-      onclick="${isLocked ? '' : `selectMeso(${m.id})`}">${m.name}</button>`;
+  // Ensure currentWeek/currentMeso are consistent
+  const meso = getMesoForWeek(state.currentWeek);
+  state.currentMeso = meso.id;
+
+  // Week tabs grouped by meso
+  const tabs = document.getElementById('weekTabs');
+  tabs.innerHTML = MESOS.map(m => {
+    const row = m.weeks.map(w => {
+      const complete = isWeekComplete(w);
+      const active = state.currentWeek === w;
+      return `<button class="week-tab ${active?'active':''} ${complete?'complete':''}" onclick="selectWeek(${w})">
+        S${w}${complete ? '<span class="wcheck">✓</span>' : ''}
+      </button>`;
+    }).join('');
+    return `<div class="meso-group">
+      <div class="meso-group-label">Méso ${m.id} — ${m.name}</div>
+      <div class="week-tab-row">${row}</div>
+    </div>`;
   }).join('');
 
-  // Week info
-  const meso = MESOS[state.currentMeso - 1];
+  // Week banner
   const weekIdx = state.currentWeek - meso.weeks[0];
-  document.getElementById('currentWeekDisplay').textContent = `S${state.currentWeek}`;
-  document.getElementById('currentRIR').textContent = `RIR ${meso.rir[Math.min(weekIdx, meso.rir.length-1)]}`;
+  const rir = meso.rir[Math.min(weekIdx, meso.rir.length-1)];
+  const isDeload = meso.id === 3 && state.currentWeek === 10;
+  const doneCount = ['A','B','C'].filter(s => isSessionDone(state.currentWeek, s)).length;
+  document.getElementById('weekBanner').innerHTML =
+    `Semaine S${state.currentWeek} · ${meso.name} · RIR ${rir}${isDeload ? ' · 🌸 Deload' : ''}<br>
+     <span style="font-size:12px;opacity:0.9;">${doneCount}/3 séances validées</span>`;
 
   // Session grid
   const grid = document.getElementById('sessionGrid');
   grid.innerHTML = ['A','B','C'].map(key => {
     const sess = meso.sessions[key];
-    const lastDone = getLastSessionDate(state.currentMeso, key);
-    return `<div class="session-card" onclick="startWorkout('${key}')">
+    const done = isSessionDone(state.currentWeek, key);
+    return `<div class="session-card ${done?'done':''}" onclick="startWorkout('${key}')">
+      ${done ? '<div class="session-check">✓</div>' : ''}
       <div class="letter">${key}</div>
       <div class="label">${sess.name}</div>
-      ${lastDone ? `<div class="last-done">✓ ${lastDone}</div>` : '<div class="last-done">Pas encore faite</div>'}
+      <div class="session-status">${done ? 'Validée' : 'À faire'}</div>
     </div>`;
   }).join('');
 }
 
-function getLastSessionDate(mesoId, sessionKey) {
-  const entries = state.history.filter(h => h.mesoId === mesoId && h.sessionKey === sessionKey);
-  if (entries.length === 0) return null;
-  const last = entries[entries.length - 1];
-  return new Date(last.date).toLocaleDateString('fr-FR', {day:'numeric', month:'short'});
-}
-
-function selectMeso(id) {
-  if (!state.unlockedMesos.includes(id)) return;
-  state.currentMeso = id;
-  state.currentWeek = MESOS[id-1].weeks[0];
+function selectWeek(week) {
+  state.currentWeek = week;
+  state.currentMeso = getMesoForWeek(week).id;
   saveState();
   renderHome();
-}
-
-function changeWeek(delta) {
-  const meso = MESOS[state.currentMeso - 1];
-  const minWeek = meso.weeks[0];
-  const maxWeek = meso.weeks[meso.weeks.length - 1];
-  const newWeek = state.currentWeek + delta;
-  if (newWeek >= minWeek && newWeek <= maxWeek) {
-    state.currentWeek = newWeek;
-    saveState();
-    renderHome();
-  }
 }
 
 // ═══════════════════════════════════════
@@ -1155,9 +1186,33 @@ function finishWorkout() {
     state.finisherData[fKey] = finInput.value;
   }
 
+  const finishedWeek = state.activeWorkout.week;
+  const finishedSession = state.activeWorkout.sessionKey;
   state.activeWorkout = null;
   saveState();
-  showScreen('home');
+  showCompletionModal(score, finishedSession, finishedWeek);
+}
+
+function showCompletionModal(score, sessionKey, week) {
+  const weekDone = isWeekComplete(week);
+  const modal = document.getElementById('modal');
+  const content = document.getElementById('modalContent');
+  content.innerHTML = `
+    <div style="text-align:center;padding:8px 0;">
+      <div class="big-check">✓</div>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--rose-dark);margin-bottom:4px;">Séance validée !</h2>
+      <div style="font-size:13px;color:var(--text-light);margin-bottom:16px;">Séance ${sessionKey} · Semaine S${week}</div>
+      <div class="score-card" style="margin:0 0 16px;">
+        <div class="score-label">Ton score</div>
+        <div class="score-value">${score}</div>
+        <div class="score-label">/10</div>
+      </div>
+      ${weekDone ? `<div style="background:var(--success-light);border-radius:12px;padding:14px;margin-bottom:16px;color:#4a8a6a;font-weight:700;font-size:14px;">🎉 Semaine S${week} complète !<br>Les 3 séances A, B et C sont validées.</div>`
+        : `<div style="background:var(--blush);border-radius:12px;padding:12px;margin-bottom:16px;color:var(--rose-dark);font-size:13px;font-weight:600;">Plus que ${['A','B','C'].filter(s=>!isSessionDone(week,s)).join(' et ')} pour boucler la semaine 💪</div>`}
+      <button class="finish-workout-btn" onclick="document.getElementById('modal').classList.remove('active');showScreen('home');">Continuer</button>
+    </div>
+  `;
+  modal.classList.add('active');
 }
 
 function confirmLeaveWorkout() {
@@ -1283,14 +1338,7 @@ function generateReport(historyIdx) {
 
   // Finisher
   if (h.finisherResult) {
-    let finKey;
-    if (meso.id === 3) {
-      finKey = h.week === meso.weeks[0] ? "1" : "2";
-    } else {
-      const midpoint = meso.weeks[0] + Math.floor(meso.weeks.length / 2);
-      finKey = h.week < midpoint ? `${meso.weeks[0]}-${midpoint-1}` : `${midpoint}-${meso.weeks[meso.weeks.length-1]}`;
-    }
-    const finisher = session.finishers[finKey];
+    const finisher = session.finishers[h.week];
     r += `── FINISHER ──\n`;
     if (finisher) r += `${finisher.name} (${finisher.format})\n`;
     r += `Résultat : ${h.finisherResult}\n\n`;
@@ -1346,33 +1394,31 @@ function copyExport() {
 // ═══════════════════════════════════════
 
 function renderSettings() {
-  const div = document.getElementById('mesoSettings');
-  div.innerHTML = MESOS.map(m => {
-    const unlocked = state.unlockedMesos.includes(m.id);
-    return `<div class="setting-row">
-      <div>
-        <div class="setting-label">Méso ${m.id} — ${m.name}</div>
-        <div class="setting-desc">S${m.weeks[0]}-S${m.weeks[m.weeks.length-1]}</div>
-      </div>
-      <button class="unlock-btn ${unlocked ? 'unlocked' : ''}"
-        onclick="${unlocked ? '' : `unlockMeso(${m.id})`}">
-        ${unlocked ? '✓ Débloqué' : '🔓 Débloquer'}
-      </button>
-    </div>`;
-  }).join('');
-}
-
-function unlockMeso(id) {
-  if (!state.unlockedMesos.includes(id)) {
-    if (confirm(`Débloquer le Mésocycle ${id} ?`)) {
-      state.unlockedMesos.push(id);
-      state.currentMeso = id;
-      state.currentWeek = MESOS[id-1].weeks[0];
-      saveState();
-      renderSettings();
-      renderHome();
-    }
+  const div = document.getElementById('progressInfo');
+  let doneSessions = 0, doneWeeks = 0;
+  for (let w = 1; w <= 10; w++) {
+    if (isWeekComplete(w)) doneWeeks++;
+    for (const s of ['A','B','C']) if (isSessionDone(w, s)) doneSessions++;
   }
+  div.innerHTML = MESOS.map(m => {
+    const weekRows = m.weeks.map(w => {
+      const complete = isWeekComplete(w);
+      const done = ['A','B','C'].filter(s => isSessionDone(w, s)).length;
+      return `<div class="setting-row">
+        <div>
+          <div class="setting-label">Semaine S${w}${complete ? ' ✓' : ''}</div>
+          <div class="setting-desc">${done}/3 séances validées</div>
+        </div>
+        <div style="font-weight:700;font-size:14px;color:${complete ? 'var(--success)' : 'var(--text-light)'};">
+          ${complete ? 'Complète' : 'En cours'}
+        </div>
+      </div>`;
+    }).join('');
+    return `<div class="meso-group-label" style="margin-top:12px;">Méso ${m.id} — ${m.name}</div>${weekRows}`;
+  }).join('') + `<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--rose-light);text-align:center;">
+    <div style="font-size:13px;color:var(--text-light);">Total</div>
+    <div style="font-weight:700;font-size:16px;color:var(--rose-dark);">${doneSessions}/30 séances · ${doneWeeks}/10 semaines</div>
+  </div>`;
 }
 
 function resetAll() {
